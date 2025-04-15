@@ -1,17 +1,8 @@
 cmake_minimum_required(VERSION 3.30)
 project(EMPE)
 
-find_package(PkgConfig)
-
-include(FetchContent)
-
-FetchContent_Declare(
-        serial_cpp
-        GIT_REPOSITORY https://github.com/ami-iit/serial_cpp.git
-        GIT_TAG        v1.3.3 # or use the tag or commit you prefer
-)
-
-FetchContent_MakeAvailable(serial_cpp)
+find_package(PkgConfig REQUIRED
+        Qt6 COMPONENTS Core Widgets SerialPort)
 
 pkg_check_modules(GTKMM gtkmm-4.0)
 
@@ -29,4 +20,8 @@ target_include_directories(EMPE PRIVATE ${GTKMM_INCLUDE_DIRS})
 
 target_link_directories(EMPE PRIVATE ${GTKMM_LIBRARY_DIRS})
 
-target_link_libraries(EMPE PRIVATE ${GTKMM_LIBRARIES} serial_cpp::serial_cpp)
+target_link_libraries(EMPE PRIVATE ${GTKMM_LIBRARIES}
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::SerialPort
+        )
