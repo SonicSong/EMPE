@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.30)
 project(EMPE)
 
-# Set Qt prefix path
-set(CMAKE_PREFIX_PATH "/usr")
-
 find_package(PkgConfig)
 pkg_check_modules(GTKMM gtkmm-4.0)
+
+include(FetchContent)
+FetchContent_Declare(
+        serial_cpp
+        GIT_REPOSITORY https://github.com/ami-iit/serial_cpp.git
+        GIT_TAG        v1.3.3 # or use the tag or commit you prefer
+)
+
+FetchContent_MakeAvailable(serial_cpp)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -22,4 +28,5 @@ target_link_directories(EMPE PRIVATE ${GTKMM_LIBRARY_DIRS})
 
 # Link Qt targets properly
 target_link_libraries(EMPE PRIVATE ${GTKMM_LIBRARIES}
+        serial_cpp::serial_cpp
 )
