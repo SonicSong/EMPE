@@ -1,10 +1,11 @@
 #ifndef SERIAL_READ_H
 #define SERIAL_READ_H
 
-#include <iostream>
+#include <serial_cpp/serial.h>
 #include <string>
-#include "serial_search.h"
+#include <iostream>
+#include <cstdio>
 
-void serial_read();
+int serial_read();
 
 #endif //SERIAL_READ_H

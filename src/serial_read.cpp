@@ -1,52 +1,35 @@
 #include "serial_read.h"
-#include <serial_cpp/serial.h>
 
-void serial_read() {
+using std::string;
+using std::cout;
+using std::cerr;
+using std::endl;
 
-  serial_cpp::Serial serial_port_1("/dev/tty.usbserial-0001");
+int serial_read() {
+    try {
+        // Open serial port with specified settings
+        serial_cpp::Serial serial("/dev/ttyUSB0", 115200,
+            serial_cpp::Timeout::simpleTimeout(1));
 
-  if (serial_port_1.isOpen() == false) {
-    std::cerr << "Failed to open serial port." << std::endl;
+        if (!serial.isOpen()) {
+            cerr << "Failed to open serial port!" << endl;
+            return 1;
+        }
 
-  } else {
-    std::cout << "Serial port opened." << std::endl;
-  }
+        cout << "Serial port opened successfully. Reading data..." << endl;
 
-  std::cout << "Baudrate-pre: " << serial_port_1.getBaudrate() << std::endl;
-  serial_port_1.setBaudrate(115200);
-  std::cout << "Baudrate-post: " << serial_port_1.getBaudrate() << std::endl << std::endl;
+        // Continuous reading loop
+        while (true) {
+            string data = serial.read(128); // Try to read up to 1024 bytes
+            if (!data.empty()) {
+                cout << "Received: " << data << endl;
+            }
+        }
 
-  std::cout << "Flowcontrol-pre: " << serial_port_1.getFlowcontrol() << std::endl;
-  serial_port_1.setFlowcontrol(serial_cpp::flowcontrol_hardware);
-  std::cout << "Flowcontrol-post: " << serial_port_1.getFlowcontrol() << std::endl << std::endl;
+    } catch (const std::exception& e) {
+        cerr << "Error: " << e.what() << endl;
+        return 1;
+    }
 
-  std::cout << "Stopbit-pre: " << serial_port_1.getStopbits() << std::endl;
-  serial_port_1.setStopbits(serial_cpp::stopbits_one);
-  std::cout << "Stopbit-post: " << serial_port_1.getStopbits() << std::endl << std::endl;
-
-  std::cout << "Parity-pre: " << serial_port_1.getParity() << std::endl;
-  serial_port_1.setParity(serial_cpp::parity_none);
-  std::cout << "Parity-post: " << serial_port_1.getParity() << std::endl << std::endl;
-
-  std::cout << "Bytesize-pre: " << serial_port_1.getBytesize() << std::endl;
-  serial_port_1.setBytesize(serial_cpp::eightbits);
-  std::cout << "Bytesize-post: " << serial_port_1.getBytesize() << std::endl << std::endl;
-
-  serial_port_1.setTimeout(serial_cpp::Timeout::max(), 100, 0, 100, 0);
-
-  //macOS tty.usbserial-0001
-  //Linux ttyUSB0
-  //macOS BT cu.EMPESensor
-  //macOS BT tty.EMPESensor
-
-
-  // serial_port_1.open();
-
-
-  // serial_1->setBaudRate(115200);
-  // serial_1.setDataBits(QSerialPort::Data8);
-  // serial_1.setParity(QSerialPort::NoParity);
-  // serial_1.setStopBits(QSerialPort::OneStop);
-  // serial_1.setFlowControl(QSerialPort::NoFlowControl);
-  std::cout << "serial_read" << std::endl;
+    return 0;
 }

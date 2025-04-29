@@ -18,6 +18,8 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(EMPE main.cpp
         src/serial_read.h
         src/serial_read.cpp
+        src/serial_search.h
+        src/serial_search.cpp
 )
 
 target_compile_features(EMPE PRIVATE cxx_std_20)
