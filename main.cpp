@@ -10,11 +10,13 @@ int main (int argc, char **argv) {
     if (!devices.empty()) {
         int selectedIndex = select_port(devices);
 
-        // if (!selectedIndex.empty()) {
-        //
-        // }
+        if (selectedIndex != -1) {
+            std::cout << selectedIndex << std::endl;
+            // std::cout << devices[selectedIndex] << std::endl;
+            return 0;
+        }
     } else {
-        std::cerr << "No ports selected/found" << std::endl;
+        std::cerr << "No ports found" << std::endl;
         return 1;
     }
 

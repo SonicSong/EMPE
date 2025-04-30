@@ -37,6 +37,8 @@ int select_port(const std::vector<DeviceInfo>& devices) {
 std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
     std::vector<DeviceInfo> devices;
 
+    std::cout << baseDir << std::endl;
+
     std::vector<std::pair<std::string, std::string>> patterns = {
         {"ttyUSB", "Linux USB serial port"},
         {"tty.usbserial", "macOS USB serial port"},
@@ -45,7 +47,7 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
 
     try {
         for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
-            if (!entry.is_regular_file()) continue;
+            if (entry.is_regular_file()) continue;
 
             std::string filename = entry.path().filename().string();
 
