@@ -8,10 +8,10 @@ int main (int argc, char **argv) {
     std::vector<DeviceInfo> devices = search_ports("/dev/");
 
     if (!devices.empty()) {
-        int selectedIndex = select_port(devices);
+        std::string selectedPort = select_port(devices);
 
-        if (selectedIndex != -1) {
-            std::cout << selectedIndex << std::endl;
+        if (!selectedPort.empty()) {
+            std::cout << selectedPort << std::endl;
             // std::cout << devices[selectedIndex] << std::endl;
             return 0;
         }

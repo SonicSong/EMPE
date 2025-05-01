@@ -1,9 +1,9 @@
 #include "serial_search.h"
 
-int select_port(const std::vector<DeviceInfo>& devices) {
+std::string select_port(const std::vector<DeviceInfo>& devices) {
     if (devices.empty()) {
         std::cout << "No matching devices found." << std::endl;
-        return -1;
+        return "";
     }
 
     std::cout << "Available devices:" << std::endl;
@@ -22,9 +22,10 @@ int select_port(const std::vector<DeviceInfo>& devices) {
             continue;
         }
 
-        if (choice == -1) return -1;
+        if (choice == -1) return "";
         if (choice >= 1 && choice <= static_cast<int>(devices.size())) {
-            return choice - 1;
+            return devices[choice - 1].path;
+            //choice - 1
         }
         std::cout << "Invalid selection. Please try again." << std::endl;
     }
