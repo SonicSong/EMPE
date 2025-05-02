@@ -5,10 +5,10 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-int serial_read() {
+int serial_read(const std::string& portName) {
     try {
         // Open serial port with specified settings
-        serial_cpp::Serial serial("/dev/ttyUSB0", 115200,
+        serial_cpp::Serial serial(portName, 115200,
             serial_cpp::Timeout::simpleTimeout(1));
 
         if (!serial.isOpen()) {

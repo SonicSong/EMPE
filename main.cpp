@@ -12,7 +12,8 @@ int main (int argc, char **argv) {
 
         if (!selectedPort.empty()) {
             std::cout << selectedPort << std::endl;
-            // std::cout << devices[selectedIndex] << std::endl;
+            serial_read(selectedPort);
+
             return 0;
         }
     } else {

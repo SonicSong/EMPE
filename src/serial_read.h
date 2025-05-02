@@ -6,6 +6,6 @@
 #include <iostream>
 #include <cstdio>
 
-int serial_read();
+int serial_read(const std::string& portName);
 
 #endif //SERIAL_READ_H
