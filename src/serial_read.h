@@ -3,6 +3,7 @@
 
 #include <serial_cpp/serial.h>
 #include <string>
+#include <regex>
 #include <iostream>
 #include <cstdio>
 
