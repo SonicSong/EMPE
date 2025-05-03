@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include "src/serial_read.h"
 #include "src/serial_search.h"
+#include "src/window.h"
 
 int main (int argc, char **argv) {
     std::vector<DeviceInfo> devices = search_ports("/dev/");
@@ -10,11 +11,13 @@ int main (int argc, char **argv) {
     if (!devices.empty()) {
         std::string selectedPort = select_port(devices);
 
+        auto app = Gtk::Application::create("EMPE");
+
         if (!selectedPort.empty()) {
             std::cout << selectedPort << std::endl;
-            serial_read(selectedPort);
+            // serial_read(selectedPort);
 
-            return 0;
+            return app->make_window_and_run<MainWindow>(argc, argv);
         }
     } else {
         std::cerr << "No ports found" << std::endl;

@@ -31,10 +31,6 @@ std::string select_port(const std::vector<DeviceInfo>& devices) {
     }
 }
 
-// std::string select_port(const std::vector<DeviceInfo>& devices) {
-//
-// }
-
 std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
     std::vector<DeviceInfo> devices;
 
