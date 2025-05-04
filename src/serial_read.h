@@ -9,4 +9,6 @@
 
 int serial_read(const std::string& portName);
 
+std::string dataBuffer;
+
 #endif //SERIAL_READ_H
