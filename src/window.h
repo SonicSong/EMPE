@@ -3,6 +3,8 @@
 
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
+#include "serial_read.h"
+#include "serial_search.h"
 #include <iostream>
 
 class MainWindow : public Gtk::Window {
@@ -12,6 +14,7 @@ class MainWindow : public Gtk::Window {
 
     private:
         void on_button_clicked();
+        void create_graph();
 
         Gtk::Button m_button;
 };

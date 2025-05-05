@@ -42,6 +42,8 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
         {"cu.", "macOS Bluetooth serial port"}
     };
 
+    //TODO: FIX WINDOWS
+
     try {
         for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
             if (entry.is_regular_file()) continue;

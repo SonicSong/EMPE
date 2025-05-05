@@ -17,3 +17,7 @@ MainWindow::~MainWindow() {
 void MainWindow::on_button_clicked() {
     std::cout << "Hello World" << std::endl;
 }
+
+void MainWindow::create_graph() {
+    std::cout << "NIE MA GRAFIKI" << std::endl;
+}
