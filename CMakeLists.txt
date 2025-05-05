@@ -11,7 +11,13 @@ FetchContent_Declare(
         GIT_TAG        v1.3.3 # or use the tag or commit you prefer
 )
 
-FetchContent_MakeAvailable(serial_cpp)
+FetchContent_Declare(
+        re2
+        GIT_REPOSITORY https://github.com/google/re2.git
+        GIT_TAG  2024-07-02
+)
+
+FetchContent_MakeAvailable(serial_cpp re2)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -30,7 +36,7 @@ target_sources(EMPE PRIVATE main.cpp)
 target_include_directories(EMPE PRIVATE ${GTKMM_INCLUDE_DIRS})
 target_link_directories(EMPE PRIVATE ${GTKMM_LIBRARY_DIRS})
 
-# Link Qt targets properly
 target_link_libraries(EMPE PRIVATE ${GTKMM_LIBRARIES}
         serial_cpp::serial_cpp
+        re2::re2
 )

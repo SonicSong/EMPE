@@ -3,12 +3,15 @@
 
 #include <serial_cpp/serial.h>
 #include <string>
-#include <regex>
 #include <iostream>
 #include <cstdio>
+#include <re2/re2.h>
 
 int serial_read(const std::string& portName);
 
-std::string dataBuffer;
+// std::string dataBuffer;
+inline int distance_read;
+inline int time_read;
 
 #endif //SERIAL_READ_H
+
