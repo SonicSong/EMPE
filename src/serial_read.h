@@ -14,4 +14,3 @@ inline int distance_read;
 inline int time_read;
 
 #endif //SERIAL_READ_H
-

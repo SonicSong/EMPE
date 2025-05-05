@@ -14,8 +14,6 @@ int main(int argc, char **argv) {
         if (!selectedPort.empty()) {
             std::cout << selectedPort << std::endl;
             serial_read(selectedPort);
-
-
         }
     } else {
         std::cerr << "No ports found" << std::endl;
