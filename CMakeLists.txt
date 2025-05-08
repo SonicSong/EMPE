@@ -28,6 +28,8 @@ add_executable(EMPE main.cpp
         src/serial_search.cpp
         src/window.h
         src/window.cpp
+        src/ThreadSafeQueue.h
+        src/ThreadSafeQueue.cpp
 )
 
 target_compile_features(EMPE PRIVATE cxx_std_20)

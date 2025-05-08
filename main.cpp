@@ -4,6 +4,7 @@
 #include "src/serial_read.h"
 #include "src/serial_search.h"
 #include "src/window.h"
+#include "src/ThreadSafeQueue.h"
 
 int main(int argc, char **argv) {
     std::vector<DeviceInfo> devices = search_ports("/dev/");
