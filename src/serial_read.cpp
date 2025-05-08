@@ -32,5 +32,4 @@ int serial_read(const std::string& portName) {
         return 1;
     }
 
-    return 0;
 }
