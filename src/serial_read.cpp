@@ -1,6 +1,6 @@
 #include "serial_read.h"
 
-int serial_read(const std::string& portName) {
+void serial_read(ThreadSafeQueue& queue, const std::string& portName) {
     try {
         RE2 pattern("YY(\\d+)T(\\d+)E", RE2::Quiet);
 
@@ -10,7 +10,7 @@ int serial_read(const std::string& portName) {
 
         if (!serial.isOpen()) {
             std::cerr << "Failed to open serial port!" << std::endl;
-            return 1;
+            throw std::runtime_error("Failed to open serial port!");
         }
 
         std::cout << "Serial port opened successfully. Reading data..." << std::endl;
@@ -21,15 +21,15 @@ int serial_read(const std::string& portName) {
 
             if (!data.empty()) {
                 std::cout << "Received: " << data << std::endl;
-                RE2::PartialMatch(data, pattern, &distance_read, &time_read);
-
                 std::cout << "Distance: " << distance_read << " Time: " << time_read  << std::endl;
+                if (RE2::PartialMatch(data, pattern, &distance_read, &time_read)) {
+                        queue.push(distance_read, time_read);
+                }
             }
         }
 
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
     }
 
 }
