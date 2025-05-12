@@ -30,6 +30,8 @@ add_executable(EMPE main.cpp
         src/window.cpp
         src/ThreadSafeQueue.h
         src/ThreadSafeQueue.cpp
+        src/atomic_vars.cpp
+        src/atomic_vars.h
 )
 
 target_compile_features(EMPE PRIVATE cxx_std_20)

@@ -6,11 +6,10 @@
 #include <iostream>
 #include <cstdio>
 #include <re2/re2.h>
+#include "ThreadSafeQueue.h"
+#include "atomic_vars.h"
+
 
 void serial_read(const std::string& portName);
-
-// std::string dataBuffer;
-inline int distance_read;
-inline int time_read;
 
 #endif //SERIAL_READ_H

@@ -12,8 +12,19 @@ private:
     std::condition_variable cond;
 
 public:
+    static ThreadSafeQueue& getInstance() {
+        static ThreadSafeQueue instance;
+        return instance;
+    }
+
     void push(int distance, int time);
     bool try_pop(int& distance, int& time);
+
+private:
+    ThreadSafeQueue() = default;
+    ~ThreadSafeQueue() = default;
+    ThreadSafeQueue(const ThreadSafeQueue&) = delete;
+    ThreadSafeQueue& operator=(const ThreadSafeQueue&) = delete;
 };
 
 #endif  // THREADSAFEQUEUE_H
