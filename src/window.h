@@ -15,6 +15,7 @@ class MainWindow : public Gtk::Window {
     private:
         void on_button_clicked();
         void create_graph();
+        void select_port_button();
 
         Gtk::Button m_button;
 };

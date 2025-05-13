@@ -21,3 +21,7 @@ void MainWindow::on_button_clicked() {
 void MainWindow::create_graph() {
     std::cout << "NIE MA GRAFIKI" << std::endl;
 }
+
+void MainWindow::select_port_button() {
+    std::cout << "NIE MA PORTU" << std::endl;
+}
