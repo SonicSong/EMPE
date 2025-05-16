@@ -26,12 +26,17 @@ add_executable(EMPE main.cpp
         src/serial_read.cpp
         src/serial_search.h
         src/serial_search.cpp
-        src/window.h
-        src/window.cpp
         src/ThreadSafeQueue.h
         src/ThreadSafeQueue.cpp
         src/atomic_vars.cpp
         src/atomic_vars.h
+        src/connection.cpp
+        src/connection.h
+        src/windowing/window.h
+        src/windowing/window.cpp
+        src/windowing/settings_window.cpp
+        src/windowing/settings_window.h
+
 )
 
 target_compile_features(EMPE PRIVATE cxx_std_20)

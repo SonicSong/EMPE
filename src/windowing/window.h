@@ -3,8 +3,8 @@
 
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
-#include "serial_read.h"
-#include "serial_search.h"
+#include "../serial_read.h"
+#include "../serial_search.h"
 #include <iostream>
 
 class MainWindow : public Gtk::Window {
