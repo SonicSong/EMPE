@@ -36,6 +36,8 @@ add_executable(EMPE main.cpp
         src/windowing/window.cpp
         src/windowing/settings_window.cpp
         src/windowing/settings_window.h
+        src/windowing/licenses.cpp
+        src/windowing/licenses.h
 
 )
 

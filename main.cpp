@@ -13,6 +13,7 @@
 #include "src/ThreadSafeQueue.h"
 #include "src/atomic_vars.h"
 #include "src/connection.h"
+#include "src/windowing/window.h"
 
 #ifdef _WIN32
 BOOL WINAPI windows_ctrl_handler(DWORD ctrl_type) {
@@ -25,7 +26,9 @@ BOOL WINAPI windows_ctrl_handler(DWORD ctrl_type) {
 #endif
 
 int main(int argc, char **argv) {
-    connection_init();
+    // connection_init();
 
-    return 0;
+    auto app = Gtk::Application::create("uken.EMPE");
+
+    return app->make_window_and_run<MainWindow>(argc, argv);
 }

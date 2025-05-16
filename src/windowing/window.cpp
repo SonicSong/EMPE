@@ -1,6 +1,7 @@
 #include "window.h"
 
 MainWindow::MainWindow() : m_button("Start") {
+    set_title("Embodying Math&Physics Education");
     m_button.set_margin(10);
 
     m_button.signal_clicked().connect(sigc::mem_fun(*this,
@@ -23,5 +24,5 @@ void MainWindow::create_graph() {
 }
 
 void MainWindow::select_port_button() {
-    std::cout << "NIE MA PORTU" << std::endl;
+
 }
