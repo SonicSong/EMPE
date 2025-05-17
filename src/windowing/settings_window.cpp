@@ -1,4 +1,3 @@
-// settings_window.cpp
 #include "settings_window.h"
 
 SettingsWindow::SettingsWindow() 
