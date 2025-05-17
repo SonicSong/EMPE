@@ -8,6 +8,7 @@
 #include <windows.h>
 #endif
 
+#include "src/windowing/window.h"
 #include "src/serial_read.h"
 #include "src/serial_search.h"
 #include "src/ThreadSafeQueue.h"
@@ -25,7 +26,9 @@ BOOL WINAPI windows_ctrl_handler(DWORD ctrl_type) {
 #endif
 
 int main(int argc, char **argv) {
-    connection_init();
+    // connection_init();
+
+    Gtk::Application::create();
 
     return 0;
 }
