@@ -1,6 +1,6 @@
 #include "serial_read.h"
 
-void serial_read(const std::string& portName) {
+void serial_read(const std::string& portName, int baudrate) {
     try {
         RE2 pattern("YY(\\d+)T(\\d+)E", RE2::Quiet);
         ThreadSafeQueue& queue = ThreadSafeQueue::getInstance();
@@ -11,7 +11,7 @@ void serial_read(const std::string& portName) {
 
 
         // Open serial port with specified settings
-        serial_cpp::Serial serial(portName, 115200,
+        serial_cpp::Serial serial(portName, baudrate,
             serial_cpp::Timeout::simpleTimeout(1));
 
         if (!serial.isOpen()) {

@@ -3,7 +3,7 @@
 MainWindow::MainWindow() 
     : m_box(Gtk::Orientation::VERTICAL),
       m_button("Start"),
-      m_settings_button("Settings"),
+      m_settings_button("Port settings"),
       m_settings_window(nullptr) {
     
     m_box.set_margin(10);
@@ -34,6 +34,15 @@ void MainWindow::on_settings_button_clicked() {
     }
     m_settings_window->show();
 }
+
+void MainWindow::save_data() {
+    std::cerr << "NIE MA ZAPISU" << std::endl;
+}
+
+void MainWindow::on_about_button_clicked() {
+    std::cout << "Nie ma About" << std::endl;
+}
+
 
 void MainWindow::create_graph() {
     std::cout << "NIE MA GRAFIKI" << std::endl;

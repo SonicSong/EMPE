@@ -4,6 +4,11 @@
 #include <gtkmm/window.h>
 #include <gtkmm/button.h>
 #include <gtkmm/box.h>
+#include <gtkmm/comboboxtext.h>
+#include <gtkmm/label.h>
+#include <gtkmm/grid.h>
+#include "../connection.h"
+#include "../settings_manager.h"
 
 class SettingsWindow : public Gtk::Window {
 public:
@@ -13,10 +18,19 @@ public:
 private:
     void on_apply_clicked();
     void on_cancel_clicked();
+    void on_click_scan_ports();
+    void update_port_list();
+    void setup_baud_rates();
 
-    Gtk::Box m_box;
+    Gtk::Grid m_grid;
+    Gtk::Label m_port_label;
+    Gtk::Label m_baud_label;
+    Gtk::ComboBoxText m_port_combo;
+    Gtk::ComboBoxText m_baud_combo;
+    Gtk::Button m_scan_ports;
     Gtk::Button m_apply_button;
     Gtk::Button m_cancel_button;
+    Gtk::Box m_button_box;
 };
 
 #endif // SETTINGS_WINDOW_H

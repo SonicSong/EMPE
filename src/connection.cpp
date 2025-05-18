@@ -4,8 +4,24 @@ void stop_reading(int /*signal*/) {
     running = false;
 }
 
-int connection_init() {
+std::vector<DeviceInfo> connection_search() {
+    #ifdef _WIN32
+        std::vector<DeviceInfo> devices = search_ports("COM");  // Windows uses COM ports
+    #else
+         std::vector<DeviceInfo> devices = search_ports("/dev/");
+    #endif
+
+    return devices;
+}
+
+int connection_init(std::vector<DeviceInfo> devices) {
     running = true;
+
+
+    auto& settings = SettingsManager::getInstance();
+    std::string selectedPort = settings.getPort();
+    int baudRate = settings.getBaudRate();
+
 
     // Set up platform-specific signal handlers for clean shutdown
     #ifdef _WIN32
@@ -25,12 +41,6 @@ int connection_init() {
         }
     #endif
 
-    #ifdef _WIN32
-        std::vector<DeviceInfo> devices = search_ports("COM");  // Windows uses COM ports
-    #else
-        std::vector<DeviceInfo> devices = search_ports("/dev/");
-    #endif
-
     if (!devices.empty()) {
         std::string selectedPort = select_port(devices);
 
@@ -38,7 +48,7 @@ int connection_init() {
             std::cout << selectedPort << std::endl;
 
             // Start reading thread
-            std::thread read_data_thread(serial_read, selectedPort);
+            std::thread read_data_thread(serial_read, selectedPort,   115200);
 
             // Don't detach the thread, we'll join it later for clean shutdown
             auto start_time = std::chrono::steady_clock::now();

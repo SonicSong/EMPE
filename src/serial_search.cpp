@@ -34,7 +34,7 @@ std::string select_port(const std::vector<DeviceInfo>& devices) {
 std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
     std::vector<DeviceInfo> devices;
 
-    std::cout << baseDir << std::endl;
+    // std::cout << baseDir << std::endl;
 
     std::vector<std::pair<std::string, std::string>> patterns = {
         {"ttyUSB", "Linux USB serial port"},
@@ -63,8 +63,3 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
 
     return devices;
 }
-
-//macOS tty.usbserial-0001
-//Linux ttyUSB0
-//macOS BT cu.EMPESensor
-//macOS BT tty.EMPESensor

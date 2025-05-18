@@ -27,6 +27,9 @@ BOOL WINAPI windows_ctrl_handler(DWORD ctrl_type) {
 
 int main(int argc, char **argv) {
     // connection_init();
+    // auto& settings = SettingsManager::getInstance();
+    // std::string current_port = settings.getPort();
+    // int current_baud = settings.getBaudRate();
 
     Gtk::Application::create();
 

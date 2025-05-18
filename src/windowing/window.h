@@ -19,10 +19,15 @@ class MainWindow : public Gtk::Window {
         void on_settings_button_clicked();
         void create_graph();
         void select_port_button();
+        void save_data();
+        void on_about_button_clicked();
 
         Gtk::Box m_box;
         Gtk::Button m_button;
         Gtk::Button m_settings_button;
+        Gtk::Button m_graph_button;
+        Gtk::Button m_save_data;
+        Gtk::Button m_about_button;
         SettingsWindow* m_settings_window;
 };
 
