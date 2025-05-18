@@ -4,10 +4,12 @@
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <gtkmm/box.h>
+#include <iostream>
+
 #include "../serial_read.h"
 #include "../serial_search.h"
 #include "settings_window.h"
-#include <iostream>
+#include "../connection.h"
 
 class MainWindow : public Gtk::Window {
     public:

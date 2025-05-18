@@ -14,7 +14,7 @@ std::vector<DeviceInfo> connection_search() {
     return devices;
 }
 
-int connection_init(std::vector<DeviceInfo> devices) {
+int connection_init() {
     running = true;
 
 
@@ -41,14 +41,11 @@ int connection_init(std::vector<DeviceInfo> devices) {
         }
     #endif
 
-    if (!devices.empty()) {
-        std::string selectedPort = select_port(devices);
-
         if (!selectedPort.empty()) {
-            std::cout << selectedPort << std::endl;
+            // std::cout << selectedPort << std::endl;
 
             // Start reading thread
-            std::thread read_data_thread(serial_read, selectedPort,   115200);
+            std::thread read_data_thread(serial_read, selectedPort, baudRate);
 
             // Don't detach the thread, we'll join it later for clean shutdown
             auto start_time = std::chrono::steady_clock::now();
@@ -58,6 +55,9 @@ int connection_init(std::vector<DeviceInfo> devices) {
             bool got_initial_data = false;
 
             // Wait for initial data
+
+            // TODO: It hangs up the thread so GUI isn't responsible.
+            // TODO: Make this into a thread so that GTK can have the ability to display it.
             while (running) {
                 if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
                     std::cout << "Received: Distance=" << distance
@@ -92,11 +92,10 @@ int connection_init(std::vector<DeviceInfo> devices) {
 
             // Clean shutdown
             read_data_thread.join();  // Wait for thread to finish
+        } else {
+            std::cerr << "No ports found" << std::endl;
+            return 1;
         }
-    } else {
-        std::cerr << "No ports found" << std::endl;
-        return 1;
-    }
 
     return 0;
 

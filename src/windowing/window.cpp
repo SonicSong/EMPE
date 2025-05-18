@@ -25,7 +25,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_button_clicked() {
-    std::cout << "Hello World" << std::endl;
+    //TODO: Calling this function will hang up the entire process as it's infinite loop it won't exit.
+    connection_init();
+    std::cerr << "Not yet" << std::endl;
 }
 
 void MainWindow::on_settings_button_clicked() {

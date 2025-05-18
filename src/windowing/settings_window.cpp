@@ -1,6 +1,8 @@
 #include "settings_window.h"
 #include <string>
 
+//TODO: Fix killing of the window so that when closing it by kill button it can be reopened and won't cause issues if someone will close it by accident.
+
 SettingsWindow::SettingsWindow()
     : m_grid()
     , m_port_label("Port:")
