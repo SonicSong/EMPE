@@ -15,9 +15,10 @@
 
 #include "../serial_read.h"
 #include "../serial_search.h"
-#include "settings_window.h"
 #include "../connection.h"
 #include "../settings_manager.h"
+#include "settings_window.h"
+#include "graph_window.h"
 
 class MainWindow : public Gtk::Window {
     public:
@@ -35,6 +36,8 @@ class MainWindow : public Gtk::Window {
         void select_port_button();
         void save_data();
         void on_about_button_clicked();
+        void on_graph_window_hide();
+
 
         Gtk::Box m_box;
         Gtk::Button m_button;
@@ -43,11 +46,14 @@ class MainWindow : public Gtk::Window {
         Gtk::Button m_save_button;
         Gtk::Button m_settings_button;
         Gtk::Button m_graph_button;
+        GraphWindow* m_graph_window;
+
         Gtk::Button m_save_data;
         Gtk::Button m_about_button;
         Gtk::Label m_distance_label;
         Gtk::Label m_time_label;
         SettingsWindow* m_settings_window;
+
         std::thread connection_thread;
         bool is_running;
         std::vector<std::pair<int, int>> data_points; // pairs of (distance, time)

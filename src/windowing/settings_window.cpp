@@ -28,6 +28,16 @@ SettingsWindow::SettingsWindow()
     m_interval_spin.set_increments(1, 10);
     m_interval_spin.set_tooltip_text("Update interval in milliseconds");
 
+    m_graph_window_label.set_text("Graph Time Window (seconds):");
+    m_graph_window_spin.set_range(1, 3600);  // 1 second to 1 hour
+    m_graph_window_spin.set_value(SettingsManager::getInstance().getGraphTimeWindow());
+    m_graph_window_spin.set_increments(1, 10);
+
+    // Add to grid
+    m_grid.attach(m_graph_window_label, 0, 3, 1, 1);
+    m_grid.attach(m_graph_window_spin, 1, 3, 1, 1);
+
+
     // Add widgets to the grid
     m_grid.attach(m_port_label, 0, 0);
     m_grid.attach(m_port_combo, 1, 0);
@@ -95,6 +105,9 @@ void SettingsWindow::on_apply_clicked() {
     Glib::ustring selected_port = m_port_combo.get_active_id();
     Glib::ustring baud_str = m_baud_combo.get_active_text();
     int interval = m_interval_spin.get_value_as_int();
+
+    SettingsManager::getInstance().setGraphTimeWindow(
+    static_cast<int>(m_graph_window_spin.get_value()));
 
     if (!selected_port.empty() && !baud_str.empty()) {
         auto& settings = SettingsManager::getInstance();

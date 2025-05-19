@@ -10,9 +10,11 @@ MainWindow::MainWindow()
       m_button("Start"),
       m_settings_button("Port settings"),
       m_save_button("Save Data"),
+      m_graph_button("Show Graph"),
       m_distance_label("Distance: 0"),
       m_time_label("Time: 00:00:00"),
       m_settings_window(nullptr),
+      m_graph_window(nullptr),
       is_running(false) {
 
     m_box.set_margin(10);
@@ -42,6 +44,13 @@ MainWindow::MainWindow()
     m_button_box.append(m_settings_button);
     m_button_box.append(m_save_button);
 
+    // Connect graph button signal
+    m_graph_button.signal_clicked().connect(
+        sigc::mem_fun(*this, &MainWindow::create_graph));
+
+    // Add graph button to button box
+    m_button_box.append(m_graph_button);
+
     // Add labels to the horizontal label box
     m_label_box.append(m_distance_label);
     m_label_box.append(m_time_label);
@@ -60,6 +69,7 @@ MainWindow::~MainWindow() {
         connection_thread.join();
     }
     delete m_settings_window;
+    delete m_graph_window;
 }
 
 bool MainWindow::update_labels() {
@@ -172,7 +182,22 @@ void MainWindow::on_about_button_clicked() {
 
 
 void MainWindow::create_graph() {
-    std::cout << "NIE MA GRAFIKI" << std::endl;
+    if (data_points.empty()) {
+        std::cerr << "No data to display" << std::endl;
+        return;
+    }
+
+    if (!m_graph_window) {
+        m_graph_window = new GraphWindow(data_points);
+        m_graph_window->signal_hide().connect(
+            sigc::bind(sigc::mem_fun(*this, &MainWindow::on_graph_window_hide)));
+    }
+    m_graph_window->show();
+}
+
+void MainWindow::on_graph_window_hide() {
+    delete m_graph_window;
+    m_graph_window = nullptr;
 }
 
 void MainWindow::select_port_button() {

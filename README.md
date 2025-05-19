@@ -1,7 +1,7 @@
 # EMPE
 
-bramka optyczna poniżej progu
 
+## Building
 
 Fedora Linux:
-- `sudo dnf install `
+- `sudo dnf install gtkmm4.0-devel`

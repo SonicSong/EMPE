@@ -34,6 +34,8 @@ private:
     Gtk::Button m_apply_button;
     Gtk::Button m_cancel_button;
     Gtk::Box m_button_box;
+    Gtk::Label m_graph_window_label;
+    Gtk::SpinButton m_graph_window_spin;
 };
 
 #endif // SETTINGS_WINDOW_H

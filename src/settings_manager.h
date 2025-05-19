@@ -25,6 +25,9 @@ public:
 
     int getInterval() const { return 4; }
 
+    void setGraphTimeWindow(int seconds) { m_graph_time_window = seconds; }
+    int getGraphTimeWindow() const { return m_graph_time_window; }
+
 
     // Common baud rates
     static const std::vector<int> availableBaudRates;
@@ -34,6 +37,7 @@ private:
 
     std::string selectedPort;
     int selectedBaudRate;
+    int m_graph_time_window = 60; // Default 60 seconds
 };
 
 #endif // SETTINGS_MANAGER_H
