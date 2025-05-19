@@ -4,14 +4,20 @@
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <gtkmm/box.h>
+#include <gtkmm/spinbutton.h>
 #include <gtkmm/label.h>
 #include <iostream>
 #include <thread>
+#include <vector>
+#include <utility>
+#include <fstream>
+
 
 #include "../serial_read.h"
 #include "../serial_search.h"
 #include "settings_window.h"
 #include "../connection.h"
+#include "../settings_manager.h"
 
 class MainWindow : public Gtk::Window {
     public:
@@ -32,6 +38,9 @@ class MainWindow : public Gtk::Window {
 
         Gtk::Box m_box;
         Gtk::Button m_button;
+        Gtk::Box m_button_box;  // For horizontal button layout
+        Gtk::Box m_label_box;   // For horizontal label layout
+        Gtk::Button m_save_button;
         Gtk::Button m_settings_button;
         Gtk::Button m_graph_button;
         Gtk::Button m_save_data;
@@ -41,6 +50,7 @@ class MainWindow : public Gtk::Window {
         SettingsWindow* m_settings_window;
         std::thread connection_thread;
         bool is_running;
+        std::vector<std::pair<int, int>> data_points; // pairs of (distance, time)
 };
 
 #endif //WINDOW_H

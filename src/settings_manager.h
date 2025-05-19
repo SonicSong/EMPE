@@ -21,12 +21,17 @@ public:
     std::string getPort() const { return selectedPort; }
     int getBaudRate() const { return selectedBaudRate; }
 
+    void setInterval(int interval) { }
+
+    int getInterval() const { return 4; }
+
+
     // Common baud rates
     static const std::vector<int> availableBaudRates;
 
 private:
     SettingsManager() : selectedPort(""), selectedBaudRate(115200) {} // Default values
-    
+
     std::string selectedPort;
     int selectedBaudRate;
 };
