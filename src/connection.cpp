@@ -60,8 +60,8 @@ int connection_init() {
             // TODO: Make this into a thread so that GTK can have the ability to display it.
             while (running) {
                 if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-                    std::cout << "Received: Distance=" << distance
-                             << ", Time=" << time << std::endl;
+                    // std::cout << "Received: Distance=" << distance
+                    //          << ", Time=" << time << std::endl;
                     got_initial_data = true;
                     break;
                 }
@@ -83,8 +83,8 @@ int connection_init() {
             // Continuous reading loop
             while (running) {
                 if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-                    std::cout << "Distance= " << distance
-                             << ", Time= " << time << std::endl;
+                    // std::cout << "Distance= " << distance
+                    //          << ", Time= " << time << std::endl;
                 }
 
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
