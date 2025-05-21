@@ -1,5 +1,7 @@
 #include "graph_window.h"
 
+//TODO: Possible fix for how much data is displayed? Count elements in vector with data and later just trim to leave the most recent eg. 100 points. Don't use seconds as it's unrelaiable. Use temporary vector to store trimmed data. It should work as continously updated vector. Could be CPU heavy.
+// I need to think a bit more about it as it's not stupid but it's not easy. Also need to verify how do I get the data to be displayed if I get it directly from vector that stores the data or from the thread connection_init().
 GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
     : m_box(Gtk::Orientation::VERTICAL),
       m_chart(nullptr),
@@ -136,6 +138,8 @@ gboolean GraphWindow::plot_point_callback(gpointer user_data) {
 //     }
 // }
 
+//TODO: It pops data directly from ThreadSafeQueue. It's good but also it makes it difficult to trim. Could move vector here to be used as temporary storage but need to figure out how to trim old data points on the run and not kill the cpu.
+
 void GraphWindow::update_thread_function() {
     while (m_running) {
         int distance, time;
@@ -178,6 +182,7 @@ void GraphWindow::update_thread_function() {
     }
 }
 
+//FIXME: Actually use remove_old_points and make it usefull to redraw the entire chart with only most recent eg. 100 ponits.
 void GraphWindow::remove_old_points(double current_time) {
     double time_window = static_cast<double>(
         SettingsManager::getInstance().getGraphTimeWindow());

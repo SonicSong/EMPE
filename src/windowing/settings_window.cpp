@@ -53,7 +53,7 @@ SettingsWindow::SettingsWindow()
     m_button_box.set_halign(Gtk::Align::END);
     m_button_box.append(m_apply_button);
     m_button_box.append(m_cancel_button);
-    m_grid.attach(m_button_box, 0, 3, 3, 1);
+    m_grid.attach(m_button_box, 0, 4, 3, 1);
 
     // Connect signals
     m_scan_ports.signal_clicked().connect(
@@ -79,7 +79,7 @@ void SettingsWindow::setup_baud_rates() {
     for (int rate : SettingsManager::availableBaudRates) {
         m_baud_combo.append(std::to_string(rate));
     }
-    m_baud_combo.set_active_text("9600"); // Default value
+    m_baud_combo.set_active_text("115200"); // Default value
 }
 
 void SettingsWindow::update_port_list() {

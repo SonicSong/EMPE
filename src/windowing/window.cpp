@@ -3,7 +3,7 @@
 #include <sstream>
 #include <glibmm/main.h>
 
-MainWindow::MainWindow() 
+MainWindow::MainWindow()
     : m_box(Gtk::Orientation::VERTICAL),
       m_button_box(Gtk::Orientation::HORIZONTAL),
       m_label_box(Gtk::Orientation::HORIZONTAL),
@@ -13,13 +13,14 @@ MainWindow::MainWindow()
       m_graph_button("Show Graph"),
       m_distance_label("Distance: 0"),
       m_time_label("Time: 00:00:00"),
+      m_about_button("About"),
       m_settings_window(nullptr),
       m_graph_window(nullptr),
       is_running(false) {
 
     m_box.set_margin(10);
     m_box.set_spacing(10);
-    
+
     // Set spacing for button and label boxes
     m_button_box.set_spacing(10);
     m_label_box.set_spacing(10);
@@ -50,6 +51,12 @@ MainWindow::MainWindow()
 
     // Add graph button to button box
     m_button_box.append(m_graph_button);
+
+    m_button_box.append(m_about_button);
+
+    m_about_button.signal_clicked().connect(
+        sigc::mem_fun(*this, &MainWindow::on_about_button_clicked));
+
 
     // Add labels to the horizontal label box
     m_label_box.append(m_distance_label);
@@ -177,7 +184,10 @@ void MainWindow::save_data() {
 //TODO: Fix saving data.
 
 void MainWindow::on_about_button_clicked() {
-    std::cout << "Nie ma About" << std::endl;
+    if (!m_licenses_window) {
+        m_licenses_window = new Licenses();
+    }
+    m_licenses_window -> show();
 }
 
 
@@ -198,8 +208,4 @@ void MainWindow::create_graph() {
 void MainWindow::on_graph_window_hide() {
     delete m_graph_window;
     m_graph_window = nullptr;
-}
-
-void MainWindow::select_port_button() {
-    std::cout << "NIE MA PORTU" << std::endl;
 }

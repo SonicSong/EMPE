@@ -19,6 +19,7 @@
 #include "../settings_manager.h"
 #include "settings_window.h"
 #include "graph_window.h"
+#include "licenses.h"
 
 class MainWindow : public Gtk::Window {
     public:
@@ -33,7 +34,6 @@ class MainWindow : public Gtk::Window {
         void on_button_clicked();
         void on_settings_button_clicked();
         void create_graph();
-        void select_port_button();
         void save_data();
         void on_about_button_clicked();
         void on_graph_window_hide();
@@ -45,14 +45,14 @@ class MainWindow : public Gtk::Window {
         Gtk::Box m_label_box;   // For horizontal label layout
         Gtk::Button m_save_button;
         Gtk::Button m_settings_button;
+        Gtk::Button m_about_button;
         Gtk::Button m_graph_button;
         GraphWindow* m_graph_window;
-
         Gtk::Button m_save_data;
-        Gtk::Button m_about_button;
         Gtk::Label m_distance_label;
         Gtk::Label m_time_label;
         SettingsWindow* m_settings_window;
+        Licenses* m_licenses_window;
 
         std::thread connection_thread;
         bool is_running;
