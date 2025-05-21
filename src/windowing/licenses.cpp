@@ -9,6 +9,7 @@ Licenses::Licenses()
     , m_gtkchart_lic("GtkChart license")
 {
     set_title("Licenses");
+    set_default_size(400, 300);
 
     m_grid.set_margin(10);
     m_grid.set_row_spacing(5);

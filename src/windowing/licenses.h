@@ -6,6 +6,8 @@
 #include <gtkmm/window.h>
 #include <gtkmm/label.h>
 #include <gtkmm/grid.h>
+#include <gtkmm/scrolledwindow.h>
+#include <gtkmm/textview.h>
 
 class Licenses : public Gtk::Window {
     public:
@@ -25,6 +27,8 @@ class Licenses : public Gtk::Window {
         Gtk::Button m_re2_lic;
         Gtk::Button m_serial_cpp_lic;
         Gtk::Button m_gtkchart_lic;
+        Gtk::ScrolledWindow m_scrolled_window;
+        Gtk::TextView m_text_view;
         Gtk::Button m_cancel_button;
 
 };
