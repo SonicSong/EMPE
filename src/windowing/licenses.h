@@ -8,6 +8,7 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/scrolledwindow.h>
 #include <gtkmm/textview.h>
+#include <fstream>
 
 class Licenses : public Gtk::Window {
     public:
@@ -31,6 +32,17 @@ class Licenses : public Gtk::Window {
         Gtk::TextView m_text_view;
         Gtk::Button m_cancel_button;
 
+};
+
+class License_Window_Popup : public Gtk::Window {
+    public:
+        License_Window_Popup();
+        ~License_Window_Popup() override;
+
+    private:
+        void on_cancel_button();
+        Gtk::Box m_box;
+        Gtk::Button m_cancel_button;
 };
 
 #endif //LICENSES_H

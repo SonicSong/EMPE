@@ -30,7 +30,30 @@ void Licenses::on_button_gtkmm() {
 
 }
 
+void Licenses::on_button_gtkchart() {
+
+}
+
+void Licenses::on_button_re2() {
+
+}
+
+void Licenses::on_button_serial_cpp() {
+
+}
 
 void Licenses::on_cancel_buttom() {
     hide();
 }
+
+License_Window_Popup::License_Window_Popup() :
+    m_cancel_button("Close") {
+
+}
+
+License_Window_Popup::~License_Window_Popup() = default;
+
+void License_Window_Popup::on_cancel_button() {
+    hide();
+}
+
