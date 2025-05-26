@@ -15,6 +15,7 @@ SettingsWindow::SettingsWindow()
 {
     set_title("EMPE Settings");
     set_modal(true);
+    set_hide_on_close(true);
 
     // Configure the grid
     m_grid.set_margin(10);

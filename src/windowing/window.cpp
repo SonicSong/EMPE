@@ -16,6 +16,7 @@ MainWindow::MainWindow()
       m_about_button("About"),
       m_settings_window(nullptr),
       m_graph_window(nullptr),
+      m_licenses_window(nullptr),  // Explicitly initialize to nullptr
       is_running(false) {
 
     m_box.set_margin(10);
@@ -77,6 +78,7 @@ MainWindow::~MainWindow() {
     }
     delete m_settings_window;
     delete m_graph_window;
+    delete m_licenses_window; // Make sure we clean up the licenses window
 }
 
 bool MainWindow::update_labels() {
@@ -186,10 +188,16 @@ void MainWindow::save_data() {
 void MainWindow::on_about_button_clicked() {
     if (!m_licenses_window) {
         m_licenses_window = new Licenses();
+        m_licenses_window->signal_hide().connect(
+            sigc::mem_fun(*this, &MainWindow::on_licenses_window_hide));
     }
-    m_licenses_window -> show();
+    m_licenses_window->show();
 }
 
+void MainWindow::on_licenses_window_hide() {
+    delete m_licenses_window;
+    m_licenses_window = nullptr;
+}
 
 void MainWindow::create_graph() {
     if (data_points.empty()) {

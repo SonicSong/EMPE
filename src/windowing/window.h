@@ -37,7 +37,7 @@ class MainWindow : public Gtk::Window {
         void save_data();
         void on_about_button_clicked();
         void on_graph_window_hide();
-
+        void on_licenses_window_hide();
 
         Gtk::Box m_box;
         Gtk::Button m_button;

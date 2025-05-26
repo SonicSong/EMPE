@@ -12,6 +12,7 @@ GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
 
     set_title("Distance-Time Graph");
     set_default_size(800, 600);
+    set_hide_on_close(true);
 
     g_mutex_init(&m_mutex);
 
