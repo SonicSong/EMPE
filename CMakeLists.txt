@@ -1,8 +1,32 @@
 cmake_minimum_required(VERSION 3.30)
 project(EMPE)
 
-find_package(PkgConfig)
-pkg_check_modules(GTKMM gtkmm-4.0)
+# Platform detection
+if(WIN32)
+    set(BUILD_WINDOWS TRUE)
+elseif(APPLE)
+    set(BUILD_MACOS TRUE)
+elseif(UNIX AND NOT APPLE)
+    set(BUILD_LINUX TRUE)
+endif()
+
+# For non-Windows platforms, use pkg-config to find gtkmm
+if(NOT BUILD_WINDOWS)
+    find_package(PkgConfig)
+    pkg_check_modules(GTKMM gtkmm-4.0)
+else()
+    # For Windows, we need to set up GTKMM differently
+    # This assumes GTKMM is installed via MSYS2/vcpkg or similar
+    # Adjust paths as needed for your Windows setup
+    set(GTKMM_INCLUDE_DIRS "$ENV{GTKMM_INCLUDE_DIR}" CACHE PATH "GTKMM include directories")
+    set(GTKMM_LIBRARY_DIRS "$ENV{GTKMM_LIB_DIR}" CACHE PATH "GTKMM library directories")
+    set(GTKMM_LIBRARIES "gtkmm-4.0" CACHE STRING "GTKMM libraries")
+
+    # Check if the paths are set
+    if(NOT GTKMM_INCLUDE_DIRS OR NOT GTKMM_LIBRARY_DIRS)
+        message(WARNING "GTKMM paths not set. Please set GTKMM_INCLUDE_DIR and GTKMM_LIB_DIR environment variables")
+    endif()
+endif()
 
 include(FetchContent)
 
@@ -41,7 +65,19 @@ if(NOT gtkchart_POPULATED)
     )
 
     # Find GTK4 dependencies
-    pkg_check_modules(GTK4 REQUIRED gtk4)
+    if(NOT BUILD_WINDOWS)
+        pkg_check_modules(GTK4 REQUIRED gtk4)
+    else()
+        # For Windows, set up GTK4 paths
+        set(GTK4_INCLUDE_DIRS "$ENV{GTK4_INCLUDE_DIR}" CACHE PATH "GTK4 include directories")
+        set(GTK4_LIBRARY_DIRS "$ENV{GTK4_LIB_DIR}" CACHE PATH "GTK4 library directories")
+        set(GTK4_LIBRARIES "gtk-4.0" CACHE STRING "GTK4 libraries")
+
+        # Check if the paths are set
+        if(NOT GTK4_INCLUDE_DIRS OR NOT GTK4_LIBRARY_DIRS)
+            message(WARNING "GTK4 paths not set. Please set GTK4_INCLUDE_DIR and GTK4_LIB_DIR environment variables")
+        endif()
+    endif()
 
     # Link GTK4 to gtkchart
     target_include_directories(gtkchart PRIVATE ${GTK4_INCLUDE_DIRS})
@@ -49,11 +85,11 @@ if(NOT gtkchart_POPULATED)
     target_link_libraries(gtkchart PRIVATE ${GTK4_LIBRARIES})
 endif()
 
-
-
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(EMPE main.cpp
+# Define source files
+set(SOURCE_FILES
+        main.cpp
         src/serial_read.h
         src/serial_read.cpp
         src/serial_search.h
@@ -74,17 +110,43 @@ add_executable(EMPE main.cpp
         src/settings_manager.cpp
         src/windowing/graph_window.cpp
         src/windowing/graph_window.h
-
 )
 
-target_compile_features(EMPE PRIVATE cxx_std_20)
-target_sources(EMPE PRIVATE main.cpp)
+add_executable(EMPE ${SOURCE_FILES})
 
+# Windows-specific settings
+if(BUILD_WINDOWS)
+    # Add WIN32 to make it a Windows GUI application (no console)
+    set_target_properties(EMPE PROPERTIES WIN32_EXECUTABLE TRUE)
+
+    # Add resource file if needed for Windows
+    # configure_file(${CMAKE_SOURCE_DIR}/resources/windows/app.rc.in ${CMAKE_BINARY_DIR}/app.rc @ONLY)
+    # target_sources(EMPE PRIVATE ${CMAKE_BINARY_DIR}/app.rc)
+
+    # Define WINDOWS for preprocessor
+    target_compile_definitions(EMPE PRIVATE WIN32 _WINDOWS)
+endif()
+
+target_compile_features(EMPE PRIVATE cxx_std_20)
+
+# Include and link directories
 target_include_directories(EMPE PRIVATE ${GTKMM_INCLUDE_DIRS})
 target_link_directories(EMPE PRIVATE ${GTKMM_LIBRARY_DIRS})
 
-target_link_libraries(EMPE PRIVATE ${GTKMM_LIBRARIES}
+# Link libraries
+target_link_libraries(EMPE PRIVATE
+        ${GTKMM_LIBRARIES}
         serial_cpp::serial_cpp
         re2::re2
         gtkchart
 )
+
+# Windows-specific post-build steps if needed
+if(BUILD_WINDOWS)
+    # Copy DLLs to build directory if needed
+    # add_custom_command(TARGET EMPE POST_BUILD
+    #     COMMAND ${CMAKE_COMMAND} -E copy_directory
+    #     "${DLL_SOURCE_DIR}" "${CMAKE_BINARY_DIR}"
+    # )
+endif()
+
