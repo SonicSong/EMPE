@@ -31,7 +31,44 @@ std::string select_port(const std::vector<DeviceInfo>& devices) {
     }
 }
 
+#ifdef _WIN32
+std::vector<DeviceInfo> search_windows_com_ports() {
+    std::vector<DeviceInfo> devices;
+
+    // Try COM ports from COM1 to COM16 (common range for most Windows systems)
+    for (int i = 1; i <= 16; i++) {
+        std::string port = "COM" + std::to_string(i);
+
+        // Try to open the port to check if it exists
+        HANDLE hComm = CreateFileA(
+            port.c_str(),
+            GENERIC_READ | GENERIC_WRITE,
+            0,                          // No sharing
+            NULL,                       // No security
+            OPEN_EXISTING,              // Open existing port only
+            0,                          // Non overlapped I/O
+            NULL                        // Null for comm devices
+        );
+
+        if (hComm != INVALID_HANDLE_VALUE) {
+            // Port exists and is available
+            CloseHandle(hComm);
+            devices.push_back({port, "Windows COM Port"});
+        }
+    }
+
+    return devices;
+}
+#endif
+
 std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
+    #ifdef _WIN32
+    // For Windows, ignore baseDir and use Windows API to find COM ports
+    if (baseDir.find("COM") == 0) {
+        return search_windows_com_ports();
+    }
+    #endif
+
     std::vector<DeviceInfo> devices;
 
     // std::cout << baseDir << std::endl;
@@ -39,10 +76,9 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
     std::vector<std::pair<std::string, std::string>> patterns = {
         {"ttyUSB", "Linux USB serial port"},
         {"tty.usbserial", "macOS USB serial port"},
-        {"cu.", "macOS Bluetooth serial port"}
+        {"cu.", "macOS Bluetooth serial port"},
+        {"COM", "Windows COM port"}
     };
-
-    //TODO: FIX WINDOWS
 
     try {
         for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
@@ -63,3 +99,4 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
 
     return devices;
 }
+

@@ -82,65 +82,14 @@ void GraphWindow::setup_chart() {
 
 gboolean GraphWindow::plot_point_callback(gpointer user_data) {
     Point* point = static_cast<Point*>(user_data);
-    std::cerr << "Plotting: (" << point->x << ", " << point->y << ")\n";
+    // std::cerr << "Plotting: (" << point->x << ", " << point->y << ")\n";
     gtk_chart_plot_point(point->chart, point->x, point->y);
     delete point;
     return G_SOURCE_REMOVE;
 }
 
-// void GraphWindow::update_thread_function() {
-//     while (m_running) {
-//         int distance, time;
-//         if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-//             g_mutex_lock(&m_mutex);
-//             std::cerr << "Popped: (" << time << ", " << distance << ")\n";
-//
-//             double x = static_cast<double>(time);
-//             double y = static_cast<double>(distance);
-//
-//             // Store new point
-//             m_data_points.emplace_back(x, y);
-//
-//             // Get the time window from settings
-//             double time_window = static_cast<double>(
-//                 SettingsManager::getInstance().getGraphTimeWindow());
-//
-//             // Remove old points
-//             double cutoff_time = x - time_window;
-//             while (!m_data_points.empty() && m_data_points.front().first < cutoff_time) {
-//                 m_data_points.pop_front();
-//             }
-//
-//             // Update axis ranges
-//             current_max_x = x;
-//             if (y > current_max_y) {
-//                 current_max_y = y * 1.2;
-//             }
-//
-//             // Clear and replot only every N points or when removing old points
-//             static int update_counter = 0;
-//             if (update_counter++ % 10 == 0) {  // Update every 10 points
-//
-//                 // Plot all remaining points
-//                 for (const auto& point : m_data_points) {
-//                     Point* new_point = new Point{point.first, point.second, m_chart};
-//                     g_idle_add(plot_point_callback, new_point);
-//                 }
-//             } else {
-//                 // Just plot the new point
-//                 Point* new_point = new Point{x, y, m_chart};
-//                 g_idle_add(plot_point_callback, new_point);
-//             }
-//
-//             g_mutex_unlock(&m_mutex);
-//         }
-//
-//         std::this_thread::sleep_for(std::chrono::milliseconds(2));
-//     }
-// }
 
 //TODO: It pops data directly from ThreadSafeQueue. It's good but also it makes it difficult to trim. Could move vector here to be used as temporary storage but need to figure out how to trim old data points on the run and not kill the cpu.
-
 void GraphWindow::update_thread_function() {
     while (m_running) {
         int distance, time;
@@ -192,7 +141,7 @@ void GraphWindow::remove_old_points(double current_time) {
     // Remove points older than the time window
     while (!m_data_points.empty() && m_data_points.front().first < cutoff_time) {
         m_data_points.pop_front();
-        std::cerr << "Removed old point NOT" << std::endl;
+        // std::cerr << "Removed old point NOT" << std::endl;
     }
 }
 

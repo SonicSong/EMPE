@@ -6,6 +6,7 @@
 #include <atomic>
 #include <csignal>
 #include <vector>
+#include <serial_cpp/impl/win.h>
 
 #include "serial_read.h"
 #include "serial_search.h"
