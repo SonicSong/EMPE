@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 project(EMPE)
 
-set(CMAKE_CXX_STANDARD 17)
-
 # Platform detection
 if(WIN32)
     set(BUILD_WINDOWS TRUE)
