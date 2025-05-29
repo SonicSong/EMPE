@@ -43,8 +43,30 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
         {"COM", "Windows COM port"}
     };
 
-    //TODO: FIX WINDOWS
+    #ifdef _WIN32
+    // Windows-specific COM port enumeration
+    // Check COM ports from COM1 to COM32 (typical range)
+    for (int i = 1; i <= 32; i++) {
+        std::string portName = "COM" + std::to_string(i);
+        // Try to open the port to see if it exists
+        HANDLE hComm = CreateFileA(
+            portName.c_str(),
+            GENERIC_READ | GENERIC_WRITE,
+            0,                     // No sharing
+            NULL,                  // No security
+            OPEN_EXISTING,         // Open existing port only
+            0,                     // Non-overlapped I/O
+            NULL                   // Null for comm devices
+        );
 
+        if (hComm != INVALID_HANDLE_VALUE) {
+            // Port exists
+            CloseHandle(hComm);
+            devices.push_back({portName, "Windows COM port"});
+        }
+    }
+    #else
+    // Unix/Linux/macOS implementation
     try {
         for (const auto& entry : std::filesystem::directory_iterator(baseDir)) {
             if (entry.is_regular_file()) continue;
@@ -61,6 +83,8 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
         std::cerr << "Error searching ports: " << e.what() << std::endl;
         return {};
     }
+    #endif
 
     return devices;
 }
+
