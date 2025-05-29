@@ -39,7 +39,8 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
     std::vector<std::pair<std::string, std::string>> patterns = {
         {"ttyUSB", "Linux USB serial port"},
         {"tty.usbserial", "macOS USB serial port"},
-        {"cu.", "macOS Bluetooth serial port"}
+        {"cu.", "macOS Bluetooth serial port"},
+        {"COM", "Windows COM port"}
     };
 
     //TODO: FIX WINDOWS
