@@ -15,7 +15,7 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
     }
 
     // If no ports were found and we're on Linux/macOS, try the fallback method
-    #ifndef _WIN32
+    #ifdef __linux__ || defined(__APPLE__)
     if (devices.empty() && !baseDir.empty()) {
         std::cerr << "No ports found with serial_cpp, trying filesystem fallback method..." << std::endl;
 
@@ -43,6 +43,7 @@ std::vector<DeviceInfo> search_ports(const std::string& baseDir) {
         }
     }
     #endif
+
 
     return devices;
 }

@@ -5,11 +5,18 @@ void stop_reading(int /*signal*/) {
 }
 
 std::vector<DeviceInfo> connection_search() {
-    #ifdef _WIN32
-        std::vector<DeviceInfo> devices = search_ports("COM");  // Windows uses COM ports
-    #else
-         std::vector<DeviceInfo> devices = search_ports("/dev/");
-    #endif
+    // With our improved port searching using serial_cpp, we don't need
+    // platform-specific paths anymore
+    std::vector<DeviceInfo> devices = search_ports();
+
+    // If no devices found, try platform-specific fallback paths
+    if (devices.empty()) {
+        #ifdef _WIN32
+            devices = search_ports("COM");  // Windows uses COM ports
+        #else
+            devices = search_ports("/dev/");
+        #endif
+    }
 
     return devices;
 }
@@ -24,22 +31,22 @@ int connection_init() {
 
 
     // Set up platform-specific signal handlers for clean shutdown
-    #ifdef _WIN32
-        if (!SetConsoleCtrlHandler(windows_ctrl_handler, TRUE)) {
-            std::cerr << "Error setting up Windows control handler" << std::endl;
-            return 1;
-        }
-    #else
-        struct sigaction sa;
-        sa.sa_handler = stop_reading;
-        sa.sa_flags = 0;
-        sigemptyset(&sa.sa_mask);
-
-        if (sigaction(SIGINT, &sa, nullptr) == -1) {
-            std::cerr << "Error setting up signal handler" << std::endl;
-            return 1;
-        }
-    #endif
+    // #ifdef _WIN32
+    //     if (!SetConsoleCtrlHandler(windows_ctrl_handler, TRUE)) {
+    //         std::cerr << "Error setting up Windows control handler" << std::endl;
+    //         return 1;
+    //     }
+    // #else
+    //     struct sigaction sa;
+    //     sa.sa_handler = stop_reading;
+    //     sa.sa_flags = 0;
+    //     sigemptyset(&sa.sa_mask);
+    //
+    //     if (sigaction(SIGINT, &sa, nullptr) == -1) {
+    //         std::cerr << "Error setting up signal handler" << std::endl;
+    //         return 1;
+    //     }
+    // #endif
 
         if (!selectedPort.empty()) {
             // std::cout << selectedPort << std::endl;
