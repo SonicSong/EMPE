@@ -16,7 +16,7 @@
 #ifndef NOMINMAX
 #define NOMINMAX  // Prevents Windows from defining min/max macros
 #endif
-#include <windows.h>
+// #include <windows.h> // Somehow this breaks compiling on Windows if you are crazy enough to compile it on Windows
 #endif
 
 struct DeviceInfo {
