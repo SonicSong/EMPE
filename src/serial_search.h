@@ -1,22 +1,24 @@
 #ifndef SERIAL_SEARCH_H
 #define SERIAL_SEARCH_H
 
-#include <filesystem>
-#include <iostream>
-#include <vector>
-#include <string>
-
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
+#include <filesystem>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <serial_cpp/serial.h>
+
+
+
 struct DeviceInfo {
     std::string path;
     std::string description;
+    std::string hardware_id; // Added hardware_id field
 };
 
-
-std::string select_port(const std::vector<DeviceInfo>& devices);
-std::vector<DeviceInfo> search_ports(const std::string& baseDir);
+std::vector<DeviceInfo> search_ports(const std::string& baseDir = ""); // Made baseDir optional
 
 #endif //SERIAL_SEARCH_H
