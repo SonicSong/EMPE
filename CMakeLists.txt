@@ -145,10 +145,30 @@ target_link_libraries(EMPE PRIVATE
 
 # Windows-specific post-build steps if needed
 if(BUILD_WINDOWS)
-    # Copy DLLs to build directory if needed
-    # add_custom_command(TARGET EMPE POST_BUILD
-    #     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    #     "${DLL_SOURCE_DIR}" "${CMAKE_BINARY_DIR}"
-    # )
+    # Where to install / copy everything
+    set(EMPE_OUT_DIR $<TARGET_FILE_DIR:EMPE>)
+
+    # 1) Copy all the DLLs from project_root/bin → output dir
+    file(GLOB GTK_DLLS "${CMAKE_SOURCE_DIR}/bin/*.dll")
+    foreach(_dll ${GTK_DLLS})
+        add_custom_command(TARGET EMPE POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_dll}"
+                "${EMPE_OUT_DIR}"
+                COMMENT "Copying ${_dll} → ${EMPE_OUT_DIR}"
+        )
+    endforeach()
+
+    # 2) Copy the etc/ and share/ trees
+    add_custom_command(TARGET EMPE POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/etc"
+            "${EMPE_OUT_DIR}/etc"
+    )
+    add_custom_command(TARGET EMPE POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/share"
+            "${EMPE_OUT_DIR}/share"
+    )
 endif()
 
