@@ -13,22 +13,22 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # For non-Windows platforms, use pkg-config to find gtkmm
-if(NOT BUILD_WINDOWS)
+#if(NOT BUILD_WINDOWS)
     find_package(PkgConfig)
     pkg_check_modules(GTKMM gtkmm-4.0)
-else()
+#else()
     # For Windows, we need to set up GTKMM differently
     # This assumes GTKMM is installed via MSYS2/vcpkg or similar
     # Adjust paths as needed for your Windows setup
-    set(GTKMM_INCLUDE_DIRS "$ENV{GTKMM_INCLUDE_DIR}" CACHE PATH "GTKMM include directories")
-    set(GTKMM_LIBRARY_DIRS "$ENV{GTKMM_LIB_DIR}" CACHE PATH "GTKMM library directories")
-    set(GTKMM_LIBRARIES "gtkmm-4.0" CACHE STRING "GTKMM libraries")
+#    set(GTKMM_INCLUDE_DIRS "$ENV{GTKMM_INCLUDE_DIR}" CACHE PATH "GTKMM include directories")
+#    set(GTKMM_LIBRARY_DIRS "$ENV{GTKMM_LIB_DIR}" CACHE PATH "GTKMM library directories")
+#    set(GTKMM_LIBRARIES "gtkmm-4.0" CACHE STRING "GTKMM libraries")
 
     # Check if the paths are set
-    if(NOT GTKMM_INCLUDE_DIRS OR NOT GTKMM_LIBRARY_DIRS)
-        message(WARNING "GTKMM paths not set. Please set GTKMM_INCLUDE_DIR and GTKMM_LIB_DIR environment variables")
-    endif()
-endif()
+#    if(NOT GTKMM_INCLUDE_DIRS OR NOT GTKMM_LIBRARY_DIRS)
+#        message(WARNING "GTKMM paths not set. Please set GTKMM_INCLUDE_DIR and GTKMM_LIB_DIR environment variables")
+#    endif()
+#endif()
 
 include(FetchContent)
 
@@ -67,19 +67,19 @@ if(NOT gtkchart_POPULATED)
     )
 
     # Find GTK4 dependencies
-    if(NOT BUILD_WINDOWS)
+#    if(NOT BUILD_WINDOWS)
         pkg_check_modules(GTK4 REQUIRED gtk4)
-    else()
-        # For Windows, set up GTK4 paths
-        set(GTK4_INCLUDE_DIRS "$ENV{GTK4_INCLUDE_DIR}" CACHE PATH "GTK4 include directories")
-        set(GTK4_LIBRARY_DIRS "$ENV{GTK4_LIB_DIR}" CACHE PATH "GTK4 library directories")
-        set(GTK4_LIBRARIES "gtk-4.0" CACHE STRING "GTK4 libraries")
-
-        # Check if the paths are set
-        if(NOT GTK4_INCLUDE_DIRS OR NOT GTK4_LIBRARY_DIRS)
-            message(WARNING "GTK4 paths not set. Please set GTK4_INCLUDE_DIR and GTK4_LIB_DIR environment variables")
-        endif()
-    endif()
+#    else()
+#        # For Windows, set up GTK4 paths
+#        set(GTK4_INCLUDE_DIRS "$ENV{GTK4_INCLUDE_DIR}" CACHE PATH "GTK4 include directories")
+#        set(GTK4_LIBRARY_DIRS "$ENV{GTK4_LIB_DIR}" CACHE PATH "GTK4 library directories")
+#        set(GTK4_LIBRARIES "gtk-4.0" CACHE STRING "GTK4 libraries")
+#
+#        # Check if the paths are set
+#        if(NOT GTK4_INCLUDE_DIRS OR NOT GTK4_LIBRARY_DIRS)
+#            message(WARNING "GTK4 paths not set. Please set GTK4_INCLUDE_DIR and GTK4_LIB_DIR environment variables")
+#        endif()
+#    endif()
 
     # Link GTK4 to gtkchart
     target_include_directories(gtkchart PRIVATE ${GTK4_INCLUDE_DIRS})
@@ -144,31 +144,31 @@ target_link_libraries(EMPE PRIVATE
 )
 
 # Windows-specific post-build steps if needed
-if(BUILD_WINDOWS)
-    # Where to install / copy everything
-    set(EMPE_OUT_DIR $<TARGET_FILE_DIR:EMPE>)
-
-    # 1) Copy all the DLLs from project_root/bin → output dir
-    file(GLOB GTK_DLLS "${CMAKE_SOURCE_DIR}/bin/*.dll")
-    foreach(_dll ${GTK_DLLS})
-        add_custom_command(TARGET EMPE POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${_dll}"
-                "${EMPE_OUT_DIR}"
-                COMMENT "Copying ${_dll} → ${EMPE_OUT_DIR}"
-        )
-    endforeach()
-
-    # 2) Copy the etc/ and share/ trees
-    add_custom_command(TARGET EMPE POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/etc"
-            "${EMPE_OUT_DIR}/etc"
-    )
-    add_custom_command(TARGET EMPE POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/share"
-            "${EMPE_OUT_DIR}/share"
-    )
-endif()
+#if(BUILD_WINDOWS)
+#    # Where to install / copy everything
+#    set(EMPE_OUT_DIR $<TARGET_FILE_DIR:EMPE>)
+#
+#    # 1) Copy all the DLLs from project_root/bin → output dir
+#    file(GLOB GTK_DLLS "${CMAKE_SOURCE_DIR}/bin/*.dll")
+#    foreach(_dll ${GTK_DLLS})
+#        add_custom_command(TARGET EMPE POST_BUILD
+#                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#                "${_dll}"
+#                "${EMPE_OUT_DIR}"
+#                COMMENT "Copying ${_dll} → ${EMPE_OUT_DIR}"
+#        )
+#    endforeach()
+#
+#    # 2) Copy the etc/ and share/ trees
+#    add_custom_command(TARGET EMPE POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy_directory
+#            "${CMAKE_SOURCE_DIR}/etc"
+#            "${EMPE_OUT_DIR}/etc"
+#    )
+#    add_custom_command(TARGET EMPE POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy_directory
+#            "${CMAKE_SOURCE_DIR}/share"
+#            "${EMPE_OUT_DIR}/share"
+#    )
+#endif()
 
