@@ -112,6 +112,8 @@ set(SOURCE_FILES
         src/settings_manager.cpp
         src/windowing/graph_window.cpp
         src/windowing/graph_window.h
+        src/counter.cpp
+        src/counter.h
 )
 
 add_executable(EMPE ${SOURCE_FILES})

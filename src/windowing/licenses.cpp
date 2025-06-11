@@ -1331,7 +1331,7 @@ void Licenses::on_button_gtkmm() {
 }
 
 void Licenses::on_button_gtkchart() {
-    update_info_label("gtkchart", "github.com/lundmar/gtkchart");
+    update_info_label("gtkchart", "https://github.com/lundmar/gtkchart");
     display_license(GTKCHART_LICENSE);
 }
 
