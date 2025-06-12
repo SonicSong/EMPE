@@ -82,7 +82,7 @@ void GraphWindow::setup_chart() {
 
 gboolean GraphWindow::plot_point_callback(gpointer user_data) {
     Point* point = static_cast<Point*>(user_data);
-    std::cerr << "Plotting: (" << point->x << ", " << point->y << ")\n";
+    // std::cerr << "Plotting: (" << point->x << ", " << point->y << ")\n";
     gtk_chart_plot_point(point->chart, point->x, point->y);
     delete point;
     return G_SOURCE_REMOVE;
@@ -192,7 +192,7 @@ void GraphWindow::remove_old_points(double current_time) {
     // Remove points older than the time window
     while (!m_data_points.empty() && m_data_points.front().first < cutoff_time) {
         m_data_points.pop_front();
-        std::cerr << "Removed old point NOT" << std::endl;
+        // std::cerr << "Removed old point NOT" << std::endl;
     }
 }
 
