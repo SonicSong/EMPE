@@ -36,6 +36,8 @@ private:
     Gtk::Box m_button_box;
     Gtk::Label m_graph_window_label;
     Gtk::SpinButton m_graph_window_spin;
+    Gtk::Label m_viewport_width_label;
+    Gtk::SpinButton m_viewport_width_spin;
 };
 
 #endif // SETTINGS_WINDOW_H

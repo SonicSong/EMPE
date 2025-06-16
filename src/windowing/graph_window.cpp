@@ -71,11 +71,8 @@ void GraphWindow::setup_chart() {
     gtk_chart_set_label(m_chart, "Distance Measurement");
     gtk_chart_set_x_label(m_chart, "Time [s]");
     gtk_chart_set_y_label(m_chart, "Distance [units]");
-    
-    double time_window = static_cast<double>(
-        SettingsManager::getInstance().getGraphTimeWindow());
-    
-    gtk_chart_set_x_max(m_chart, time_window);
+
+    gtk_chart_set_x_min(m_chart, 0.0);
     gtk_chart_set_y_max(m_chart, current_max_y);
     gtk_chart_set_width(m_chart, 800);
 }
@@ -88,59 +85,6 @@ gboolean GraphWindow::plot_point_callback(gpointer user_data) {
     return G_SOURCE_REMOVE;
 }
 
-// void GraphWindow::update_thread_function() {
-//     while (m_running) {
-//         int distance, time;
-//         if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-//             g_mutex_lock(&m_mutex);
-//             std::cerr << "Popped: (" << time << ", " << distance << ")\n";
-//
-//             double x = static_cast<double>(time);
-//             double y = static_cast<double>(distance);
-//
-//             // Store new point
-//             m_data_points.emplace_back(x, y);
-//
-//             // Get the time window from settings
-//             double time_window = static_cast<double>(
-//                 SettingsManager::getInstance().getGraphTimeWindow());
-//
-//             // Remove old points
-//             double cutoff_time = x - time_window;
-//             while (!m_data_points.empty() && m_data_points.front().first < cutoff_time) {
-//                 m_data_points.pop_front();
-//             }
-//
-//             // Update axis ranges
-//             current_max_x = x;
-//             if (y > current_max_y) {
-//                 current_max_y = y * 1.2;
-//             }
-//
-//             // Clear and replot only every N points or when removing old points
-//             static int update_counter = 0;
-//             if (update_counter++ % 10 == 0) {  // Update every 10 points
-//
-//                 // Plot all remaining points
-//                 for (const auto& point : m_data_points) {
-//                     Point* new_point = new Point{point.first, point.second, m_chart};
-//                     g_idle_add(plot_point_callback, new_point);
-//                 }
-//             } else {
-//                 // Just plot the new point
-//                 Point* new_point = new Point{x, y, m_chart};
-//                 g_idle_add(plot_point_callback, new_point);
-//             }
-//
-//             g_mutex_unlock(&m_mutex);
-//         }
-//
-//         std::this_thread::sleep_for(std::chrono::milliseconds(2));
-//     }
-// }
-
-//TODO: It pops data directly from ThreadSafeQueue. It's good but also it makes it difficult to trim. Could move vector here to be used as temporary storage but need to figure out how to trim old data points on the run and not kill the cpu.
-
 void GraphWindow::update_thread_function() {
     while (m_running) {
         int distance, time;
@@ -150,21 +94,17 @@ void GraphWindow::update_thread_function() {
             double x = static_cast<double>(time);
             double y = static_cast<double>(distance);
 
-            // Remove old points
-            remove_old_points(x);
-
             // Store new point
             m_data_points.emplace_back(x, y);
 
-            // Update axis ranges
-            double time_window = static_cast<double>(
-                SettingsManager::getInstance().getGraphTimeWindow());
 
-            // Set x-axis range to show only the time window
-            gtk_chart_set_x_max(m_chart, x);
-            if (x > time_window) {
-                gtk_chart_set_x_max(m_chart, x);
-            }
+            // Set x-axis range to show only the time window (viewport scroll)
+            double x_max = x;
+            double viewport_width = static_cast<double>(
+                SettingsManager::getInstance().getViewportWidth());
+            double x_min = (x_max > viewport_width) ? (x_max - viewport_width) : 0.0;
+            gtk_chart_set_x_min(m_chart, x_min);
+            gtk_chart_set_x_max(m_chart, x_max);
 
             // Update y-axis if needed
             if (y > current_max_y) {
@@ -180,19 +120,6 @@ void GraphWindow::update_thread_function() {
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    }
-}
-
-//FIXME: Actually use remove_old_points and make it usefull to redraw the entire chart with only most recent eg. 100 ponits.
-void GraphWindow::remove_old_points(double current_time) {
-    double time_window = static_cast<double>(
-        SettingsManager::getInstance().getGraphTimeWindow());
-    double cutoff_time = current_time - time_window;
-
-    // Remove points older than the time window
-    while (!m_data_points.empty() && m_data_points.front().first < cutoff_time) {
-        m_data_points.pop_front();
-        // std::cerr << "Removed old point NOT" << std::endl;
     }
 }
 

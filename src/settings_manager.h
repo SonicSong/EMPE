@@ -17,27 +17,26 @@ public:
 
     void setPort(const std::string& port) { selectedPort = port; }
     void setBaudRate(int baud) { selectedBaudRate = baud; }
+    void setViewportWidth(int width) { m_viewport_width = width; }
 
     std::string getPort() const { return selectedPort; }
     int getBaudRate() const { return selectedBaudRate; }
+    int getViewportWidth() const { return m_viewport_width; }
 
     void setInterval(int interval) { }
 
     int getInterval() const { return 4; }
 
-    void setGraphTimeWindow(int seconds) { m_graph_time_window = seconds; }
-    int getGraphTimeWindow() const { return m_graph_time_window; }
-
-
     // Common baud rates
     static const std::vector<int> availableBaudRates;
 
 private:
-    SettingsManager() : selectedPort(""), selectedBaudRate(115200) {} // Default values
+    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(800) {} // Default values
 
     std::string selectedPort;
     int selectedBaudRate;
     int m_graph_time_window = 60; // Default 60 seconds
+    int m_viewport_width;  // Added viewport width setting
 };
 
 #endif // SETTINGS_MANAGER_H

@@ -40,8 +40,6 @@ private:
     void update_thread_function();
     void setup_chart();
     std::deque<std::pair<double, double>> m_data_points;  // Use deque for efficient front removal
-    void remove_old_points(double current_time);
-
     void on_close_clicked();
 
 

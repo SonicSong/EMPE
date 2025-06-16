@@ -29,14 +29,14 @@ SettingsWindow::SettingsWindow()
     m_interval_spin.set_increments(1, 10);
     m_interval_spin.set_tooltip_text("Update interval in milliseconds");
 
-    m_graph_window_label.set_text("Graph Time Window (seconds):");
-    m_graph_window_spin.set_range(1, 3600);  // 1 second to 1 hour
-    m_graph_window_spin.set_value(SettingsManager::getInstance().getGraphTimeWindow());
-    m_graph_window_spin.set_increments(1, 10);
+    m_viewport_width_label.set_text("Viewport Width (points):");
+    m_viewport_width_spin.set_range(100, 10000);
+    m_viewport_width_spin.set_value(SettingsManager::getInstance().getViewportWidth());
+    m_viewport_width_spin.set_increments(100, 1000);
 
     // Add to grid
-    m_grid.attach(m_graph_window_label, 0, 3, 1, 1);
-    m_grid.attach(m_graph_window_spin, 1, 3, 1, 1);
+    m_grid.attach(m_viewport_width_label, 0, 3, 1, 1);
+    m_grid.attach(m_viewport_width_spin, 1, 3, 1, 1);
 
 
     // Add widgets to the grid
@@ -54,7 +54,7 @@ SettingsWindow::SettingsWindow()
     m_button_box.set_halign(Gtk::Align::END);
     m_button_box.append(m_apply_button);
     m_button_box.append(m_cancel_button);
-    m_grid.attach(m_button_box, 0, 4, 3, 1);
+    m_grid.attach(m_button_box, 0, 5, 3, 1);
 
     // Connect signals
     m_scan_ports.signal_clicked().connect(
@@ -107,14 +107,14 @@ void SettingsWindow::on_apply_clicked() {
     Glib::ustring baud_str = m_baud_combo.get_active_text();
     int interval = m_interval_spin.get_value_as_int();
 
-    SettingsManager::getInstance().setGraphTimeWindow(
-    static_cast<int>(m_graph_window_spin.get_value()));
+    SettingsManager::getInstance().setViewportWidth(
+        static_cast<int>(m_viewport_width_spin.get_value()));
 
     if (!selected_port.empty() && !baud_str.empty()) {
         auto& settings = SettingsManager::getInstance();
         settings.setPort(selected_port);
         settings.setBaudRate(std::stoi(baud_str));
-        settings.setInterval(interval);  // You'll need to add this method to SettingsManager
+        settings.setInterval(interval);
         hide();
     }
 }
