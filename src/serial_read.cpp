@@ -19,7 +19,7 @@ void serial_read(const std::string& portName, int baudrate) {
             throw std::runtime_error("Failed to open serial port!");
         }
 
-        std::cout << "Serial port opened successfully. Reading data..." << std::endl;
+        // std::cout << "Serial port opened successfully. Reading data..." << std::endl;
 
         const size_t chunk_size = 16; // Smaller chunks for more frequent processing
         std::string chunk;

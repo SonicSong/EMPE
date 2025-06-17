@@ -24,11 +24,9 @@ std::vector<DeviceInfo> connection_search() {
 int connection_init() {
     running = true;
 
-
     auto& settings = SettingsManager::getInstance();
     std::string selectedPort = settings.getPort();
     int baudRate = settings.getBaudRate();
-
 
     // Set up platform-specific signal handlers for clean shutdown
     // #ifdef _WIN32

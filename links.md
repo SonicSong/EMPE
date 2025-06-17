@@ -1,3 +1,0 @@
-- [GIOUnix](https://docs.gtk.org/gio-unix/class.InputStream.html)
-- [Example.h](https://github.com/phako/Sellerie/blob/master/src/serial-port.h)
-- [Example.c](https://github.com/phako/Sellerie/blob/master/src/serial-port.c)

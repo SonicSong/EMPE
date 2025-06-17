@@ -176,7 +176,7 @@ void MainWindow::save_data() {
         }
 
         file.close();
-        std::cout << "Data saved to: " << filename.str() << std::endl;
+        // std::cout << "Data saved to: " << filename.str() << std::endl;
 
     } catch (const std::exception& e) {
         std::cerr << "Error saving data: " << e.what() << std::endl;
