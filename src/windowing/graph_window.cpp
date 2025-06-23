@@ -6,6 +6,7 @@ GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
     : m_box(Gtk::Orientation::VERTICAL),
       m_chart(nullptr),
       m_running(true),
+      m_save_button("Save data to csv"),
       m_close_window("Close"),
       current_max_x(100.0),
       current_max_y(100.0) {
@@ -43,15 +44,23 @@ GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
     m_close_window.set_halign(Gtk::Align::CENTER);
     m_close_window.set_margin(5);
 
-    // Add close button to box
+    // Setup save button
+    m_save_button.set_label("Save data to CSV");
+    m_save_button.set_halign(Gtk::Align::CENTER);
+    m_save_button.set_margin(5);
+
+    // Add buttons to box
+    m_box.append(m_save_button);
     m_box.append(m_close_window);
 
     // Set box as main window content
     set_child(m_box);
 
-    // Connect signal
+    // Connect signals
     m_close_window.signal_clicked().connect(
         sigc::mem_fun(*this, &GraphWindow::on_close_clicked));
+    m_save_button.signal_clicked().connect(
+        sigc::mem_fun(*this, &GraphWindow::on_save_clicked));
 
     // Start the update thread
     m_update_thread = std::thread(&GraphWindow::update_thread_function, this);
@@ -125,4 +134,15 @@ void GraphWindow::update_thread_function() {
 
 void GraphWindow::on_close_clicked() {
     hide();
+}
+
+void GraphWindow::on_save_clicked() {
+    auto now = std::time(nullptr);
+    auto tm = *std::localtime(&now);
+    std::ostringstream filename;
+    filename << "chart-" << std::put_time(&tm, "%Y%m%d-%H%M%S") << ".csv";
+
+    g_mutex_lock(&m_mutex);
+    gtk_chart_save_csv(m_chart, filename.str().c_str());
+    g_mutex_unlock(&m_mutex);
 }

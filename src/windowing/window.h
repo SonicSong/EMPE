@@ -34,7 +34,6 @@ class MainWindow : public Gtk::Window {
         void on_button_clicked();
         void on_settings_button_clicked();
         void create_graph();
-        void save_data();
         void on_about_button_clicked();
         void on_graph_window_hide();
         void on_licenses_window_hide();
@@ -48,7 +47,6 @@ class MainWindow : public Gtk::Window {
         Gtk::Button m_about_button;
         Gtk::Button m_graph_button;
         GraphWindow* m_graph_window;
-        Gtk::Button m_save_data;
         Gtk::Label m_distance_label;
         Gtk::Label m_time_label;
         SettingsWindow* m_settings_window;

@@ -6,6 +6,10 @@
 #include <gtkchart.h>
 #include <iostream>
 #include <thread>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 #include <glibmm/main.h>
 #include <glibmm/wrap.h>
 #include <gtk/gtk.h>
@@ -27,6 +31,7 @@ private:
     std::thread m_update_thread;
     GMutex m_mutex;
     Gtk::Button m_close_window;
+    Gtk::Button m_save_button;
     double current_max_x;
     double current_max_y;
 
@@ -41,8 +46,7 @@ private:
     void setup_chart();
     std::deque<std::pair<double, double>> m_data_points;  // Use deque for efficient front removal
     void on_close_clicked();
-
-
+    void on_save_clicked();
 };
 
 #endif //GRAPH_WINDOW_H

@@ -9,7 +9,6 @@ MainWindow::MainWindow()
       m_label_box(Gtk::Orientation::HORIZONTAL),
       m_button("Start"),
       m_settings_button("Port settings"),
-      m_save_button("Save Data"),
       m_graph_button("Show Graph"),
       m_distance_label("Distance: 0"),
       m_time_label("Time: 00:00:00"),
@@ -31,8 +30,6 @@ MainWindow::MainWindow()
         sigc::mem_fun(*this, &MainWindow::on_button_clicked));
     m_settings_button.signal_clicked().connect(
         sigc::mem_fun(*this, &MainWindow::on_settings_button_clicked));
-    m_save_button.signal_clicked().connect(
-        sigc::mem_fun(*this, &MainWindow::save_data));
 
     // Update using the interval from settings
     auto& settings = SettingsManager::getInstance();
@@ -44,7 +41,6 @@ MainWindow::MainWindow()
     // Add buttons to the horizontal button box
     m_button_box.append(m_button);
     m_button_box.append(m_settings_button);
-    m_button_box.append(m_save_button);
 
     // Connect graph button signal
     m_graph_button.signal_clicked().connect(
@@ -140,50 +136,6 @@ void MainWindow::on_settings_button_clicked() {
     }
     m_settings_window->show();
 }
-
-void MainWindow::save_data() {
-    if (data_points.empty()) {
-        std::cerr << "No data to save" << std::endl;
-        return;
-    }
-
-    // Get current time for filename
-    auto now = std::chrono::system_clock::now();
-    auto time = std::chrono::system_clock::to_time_t(now);
-    std::stringstream filename;
-    filename << "measurement_" << std::put_time(std::localtime(&time), "%Y%m%d_%H%M%S") << ".csv";
-
-    try {
-        std::ofstream file(filename.str());
-        if (!file.is_open()) {
-            std::cerr << "Failed to open file: " << filename.str() << std::endl;
-            return;
-        }
-
-        // Write CSV header
-        file << "Distance,Time(s)\n";
-
-        // Write data points
-        for (const auto& [distance, time] : data_points) {
-            // Split time into seconds and milliseconds
-            int seconds = time / 1000;
-            int milliseconds = time % 1000;
-
-            file << distance << ","
-                 << seconds << "."
-                 << std::setfill('0') << std::setw(3) << milliseconds
-                 << "\n";
-        }
-
-        file.close();
-        // std::cout << "Data saved to: " << filename.str() << std::endl;
-
-    } catch (const std::exception& e) {
-        std::cerr << "Error saving data: " << e.what() << std::endl;
-    }
-}
-
-//TODO: Fix saving data.
 
 void MainWindow::on_about_button_clicked() {
     if (!m_licenses_window) {
