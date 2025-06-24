@@ -42,6 +42,8 @@ class MainWindow : public Gtk::Window {
         Gtk::Button m_button;
         Gtk::Box m_button_box;  // For horizontal button layout
         Gtk::Box m_label_box;   // For horizontal label layout
+        Gtk::Box m_threshold_box;  // New box for threshold settings
+
         Gtk::Button m_save_button;
         Gtk::Button m_settings_button;
         Gtk::Button m_about_button;
@@ -49,6 +51,10 @@ class MainWindow : public Gtk::Window {
         GraphWindow* m_graph_window;
         Gtk::Label m_distance_label;
         Gtk::Label m_time_label;
+        Gtk::Label m_crossings_label;  // New label for threshold crossings
+        Gtk::Label m_threshold_label;   // Label for threshold setting
+        Gtk::SpinButton m_threshold_spin;  // Spin button for threshold value
+
         SettingsWindow* m_settings_window;
         Licenses* m_licenses_window;
 
