@@ -7,9 +7,11 @@ MainWindow::MainWindow()
     : m_box(Gtk::Orientation::VERTICAL),
       m_button_box(Gtk::Orientation::HORIZONTAL),
       m_label_box(Gtk::Orientation::HORIZONTAL),
+      m_counter_box(Gtk::Orientation::HORIZONTAL),
       m_button("Start"),
       m_settings_button("Port settings"),
       m_graph_button("Show Graph"),
+      m_counter_start_button("Start Counter"),
       m_distance_label("Distance: 0"),
       m_time_label("Time: 00:00:00"),
       m_about_button("About"),
@@ -63,6 +65,40 @@ MainWindow::MainWindow()
     m_box.append(m_button_box);
     m_box.append(m_label_box);
 
+    // Setup counter UI elements
+    m_counter_box.set_spacing(10);
+    m_threshold_label.set_text("Threshold:");
+    m_window_label.set_text("Time Window (s):");
+    m_crossings_label.set_text("Crossings: 0");
+
+    // Configure spin buttons
+    m_threshold_spin.set_range(0, 1000);
+    m_threshold_spin.set_increments(1, 10);
+    m_threshold_spin.set_value(100);
+
+    m_window_spin.set_range(1, 3600);
+    m_window_spin.set_increments(1, 10);
+    m_window_spin.set_value(60);
+
+    // Connect counter signals
+    m_counter_start_button.signal_clicked().connect(
+        sigc::mem_fun(*this, &MainWindow::on_counter_start_clicked));
+    m_threshold_spin.signal_value_changed().connect(
+        sigc::mem_fun(*this, &MainWindow::on_threshold_changed));
+    m_window_spin.signal_value_changed().connect(
+        sigc::mem_fun(*this, &MainWindow::on_window_changed));
+
+    // Add counter elements to counter box
+    m_counter_box.append(m_threshold_label);
+    m_counter_box.append(m_threshold_spin);
+    m_counter_box.append(m_window_label);
+    m_counter_box.append(m_window_spin);
+    m_counter_box.append(m_counter_start_button);
+    m_counter_box.append(m_crossings_label);
+
+    // Add counter box to main box after the existing elements
+    m_box.append(m_counter_box);
+
     set_child(m_box);
 }
 
@@ -82,6 +118,14 @@ bool MainWindow::update_labels() {
     if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
         // Store the data point
         data_points.emplace_back(distance, time);
+
+        // Update counter with new distance value
+        m_counter.updateValue(distance);
+
+        // Update crossings label
+        std::stringstream crossings_str;
+        crossings_str << "Crossings: " << m_counter.getThresholdCrossings();
+        m_crossings_label.set_text(crossings_str.str());
 
         // Update distance label
         std::stringstream distance_str;
@@ -168,4 +212,24 @@ void MainWindow::create_graph() {
 void MainWindow::on_graph_window_hide() {
     delete m_graph_window;
     m_graph_window = nullptr;
+}
+
+void MainWindow::on_counter_start_clicked() {
+    if (m_counter_start_button.get_label() == "Start Counter") {
+        m_counter.setCounterThreshold(m_threshold_spin.get_value());
+        m_counter.setTimeWindow(std::chrono::seconds(static_cast<int>(m_window_spin.get_value())));
+        m_counter.startCounter();
+        m_counter_start_button.set_label("Stop Counter");
+    } else {
+        m_counter.stopCounter();
+        m_counter_start_button.set_label("Start Counter");
+    }
+}
+
+void MainWindow::on_threshold_changed() {
+    m_counter.setCounterThreshold(m_threshold_spin.get_value());
+}
+
+void MainWindow::on_window_changed() {
+    m_counter.setTimeWindow(std::chrono::seconds(static_cast<int>(m_window_spin.get_value())));
 }
