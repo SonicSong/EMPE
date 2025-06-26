@@ -1,11 +1,15 @@
 #ifndef COUNTER_H
 #define COUNTER_H
 
+#include <iostream>
+#include <thread>
 #include <chrono>
-#include <deque>
 #include <mutex>
 #include <atomic>
-#include <thread>
+#include <deque>
+#include <functional>
+#include <sstream>
+#include <iomanip>
 
 class Counter {
 public:
@@ -22,6 +26,9 @@ public:
     int getThresholdCrossings();
     void updateValue(double value);
 
+    // Set callback for time remaining updates
+    void setRemainingTimeCallback(std::function<void(const std::string&)> callback);
+
 private:
     void cleanupThread();
 
@@ -35,6 +42,7 @@ private:
     bool wasBelow_;
     std::thread cleanup_thread_;
     std::atomic<bool> stop_flag_;
+    std::function<void(const std::string&)> remainingTimeCallback_;
 };
 
 #endif

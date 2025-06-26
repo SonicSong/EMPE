@@ -69,7 +69,8 @@ MainWindow::MainWindow()
     m_counter_box.set_spacing(10);
     m_threshold_label.set_text("Threshold:");
     m_window_label.set_text("Time Window (s):");
-    m_crossings_label.set_text("Crossings: 0");
+    // m_crossings_label.set_text("Crossings: 0");
+    m_counter_time_label.set_text("");  // Initialize the counter time label
 
     // Configure spin buttons
     m_threshold_spin.set_range(0, 1000);
@@ -88,13 +89,20 @@ MainWindow::MainWindow()
     m_window_spin.signal_value_changed().connect(
         sigc::mem_fun(*this, &MainWindow::on_window_changed));
 
+    // Set the callback for counter time updates
+    m_counter.setRemainingTimeCallback(
+        sigc::mem_fun(*this, &MainWindow::update_counter_time));
+
     // Add counter elements to counter box
     m_counter_box.append(m_threshold_label);
     m_counter_box.append(m_threshold_spin);
     m_counter_box.append(m_window_label);
     m_counter_box.append(m_window_spin);
     m_counter_box.append(m_counter_start_button);
-    m_counter_box.append(m_crossings_label);
+    // m_counter_box.append(m_crossings_label);
+
+    // Add the counter time label to the UI
+    m_box.append(m_counter_time_label);
 
     // Add counter box to main box after the existing elements
     m_box.append(m_counter_box);
@@ -123,9 +131,9 @@ bool MainWindow::update_labels() {
         m_counter.updateValue(distance);
 
         // Update crossings label
-        std::stringstream crossings_str;
-        crossings_str << "Crossings: " << m_counter.getThresholdCrossings();
-        m_crossings_label.set_text(crossings_str.str());
+        // std::stringstream crossings_str;
+        // crossings_str << "Crossings: " << m_counter.getThresholdCrossings();
+        // m_crossings_label.set_text(crossings_str.str());
 
         // Update distance label
         std::stringstream distance_str;
@@ -214,6 +222,16 @@ void MainWindow::on_graph_window_hide() {
     m_graph_window = nullptr;
 }
 
+void MainWindow::update_counter_time(const std::string& time_text) {
+    // Use Glib::signal_idle to safely update the UI from a non-main thread
+    auto update_func = [this, time_text]() {
+        m_counter_time_label.set_text(time_text);
+        return false; // Return false to run only once
+    };
+
+    Glib::signal_idle().connect(update_func);
+}
+
 void MainWindow::on_counter_start_clicked() {
     if (m_counter_start_button.get_label() == "Start Counter") {
         m_counter.setCounterThreshold(m_threshold_spin.get_value());
@@ -223,6 +241,8 @@ void MainWindow::on_counter_start_clicked() {
     } else {
         m_counter.stopCounter();
         m_counter_start_button.set_label("Start Counter");
+        // Clear the counter time label when stopping the counter
+        m_counter_time_label.set_text("");
     }
 }
 

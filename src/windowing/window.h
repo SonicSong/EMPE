@@ -41,6 +41,7 @@ class MainWindow : public Gtk::Window {
         void on_counter_start_clicked();
         void on_threshold_changed();
         void on_window_changed();
+        void update_counter_time(const std::string& time_text);
 
         Gtk::Box m_box;
         Gtk::Button m_button;
@@ -57,11 +58,12 @@ class MainWindow : public Gtk::Window {
         GraphWindow* m_graph_window;
         Gtk::Label m_distance_label;
         Gtk::Label m_time_label;
-        Gtk::Label m_crossings_label;  // New label for threshold crossings
+        // Gtk::Label m_crossings_label;  // New label for threshold crossings
         Gtk::Label m_threshold_label;   // Label for threshold setting
         Gtk::SpinButton m_threshold_spin;  // Spin button for threshold value
         Gtk::SpinButton m_window_spin;
         Gtk::Label m_window_label;
+        Gtk::Label m_counter_time_label;  // New label for counter time display
 
         SettingsWindow* m_settings_window;
         Licenses* m_licenses_window;
