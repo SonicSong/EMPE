@@ -143,6 +143,6 @@ void GraphWindow::on_save_clicked() {
     filename << "chart-" << std::put_time(&tm, "%Y%m%d-%H%M%S") << ".csv";
 
     g_mutex_lock(&m_mutex);
-    gtk_chart_save_csv(m_chart, filename.str().c_str());
+    gtk_chart_save_csv(m_chart, filename.str().c_str(), nullptr);
     g_mutex_unlock(&m_mutex);
 }
