@@ -171,3 +171,6 @@ void Counter::cleanupThread() {
         remainingTimeCallback_(ss.str());
     }
 }
+
+
+//TODO: Add a method to stop the counter when the reading is stopped
