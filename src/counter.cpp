@@ -122,7 +122,7 @@ void Counter::cleanupThread() {
                     crossingTimes_.pop_front();
                     // if (crossings_ > 0) {
                     //     crossings_--;
-                    // }
+                    // } Commented out because it will start removing crossings
                 } else {
                     // If the oldest is still within window, the rest are too
                     break;
@@ -171,6 +171,5 @@ void Counter::cleanupThread() {
         remainingTimeCallback_(ss.str());
     }
 }
-
 
 //TODO: Add a method to stop the counter when the reading is stopped

@@ -10,9 +10,7 @@ counter_window::counter_window()
       m_window_label("Time Window (s):"),
       m_counter_start_button("Start Counter"),
       m_counter_time_label(""),  // Initialize the counter time label
-      m_close_button("Close"),
-      m_threshold_spin(),
-      m_window_spin() {
+      m_close_button("Close") {
 
     set_title("Counter Window");
     set_default_size(200, 150);
@@ -68,8 +66,8 @@ counter_window::counter_window()
 
 counter_window::~counter_window() = default;
 
-
 void counter_window::update_counter_time(const std::string& time_text) {
+    std::cout<< "UPDATE TIME: " << time_text << std::endl;
     // Use Glib::signal_idle to safely update the UI from a non-main thread
     auto update_func = [this, time_text]() {
         m_counter_time_label.set_text(time_text);
@@ -81,11 +79,13 @@ void counter_window::update_counter_time(const std::string& time_text) {
 
 void counter_window::on_counter_start_clicked() {
     if (m_counter_start_button.get_label() == "Start Counter") {
+        std::cout<< "START";
         m_counter.setCounterThreshold(m_threshold_spin.get_value());
         m_counter.setTimeWindow(std::chrono::seconds(static_cast<int>(m_window_spin.get_value())));
         m_counter.startCounter();
         m_counter_start_button.set_label("Stop Counter");
     } else {
+        std::cout<< "STOP";
         m_counter.stopCounter();
         m_counter_start_button.set_label("Start Counter");
         // Clear the counter time label when stopping the counter
@@ -94,9 +94,13 @@ void counter_window::on_counter_start_clicked() {
 }
 
 void counter_window::on_threshold_changed() {
+    std::cout<< "CHANGE";
     m_counter.setCounterThreshold(m_threshold_spin.get_value());
 }
 
 void counter_window::on_window_changed() {
+    std::cout<< "WINDOW CHANGE";
     m_counter.setTimeWindow(std::chrono::seconds(static_cast<int>(m_window_spin.get_value())));
 }
+
+//Either data isn't passed or there is simply connection issue between counter and window

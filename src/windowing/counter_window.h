@@ -11,6 +11,10 @@
 #include <gtkmm/grid.h>
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/label.h>
+
+#include <glibmm/main.h>
+#include <glibmm/wrap.h>
+
 #include <thread>
 #include <chrono>
 #include <mutex>
@@ -18,24 +22,13 @@
 #include <deque>
 #include <functional>
 
-#include <glibmm/main.h>
-#include <glibmm/wrap.h>
-
-
 #include "../counter.h"
+#include "../ThreadSafeQueue.h"
 
 class counter_window : public Gtk::Window {
 public:
     counter_window();
     ~counter_window();
-
-// protected:
-//     bool update_labels() override {
-//         // Update the counter time label with the current time from the counter
-//         std::string time_text = m_counter.getCounterTime();
-//         m_counter_time_label.set_text(time_text);
-//         return true;  // Continue calling this method
-//     }
 
 private:
     void on_start_clicked();
