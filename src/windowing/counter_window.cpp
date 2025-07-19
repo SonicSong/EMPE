@@ -6,27 +6,33 @@
 
 counter_window::counter_window()
     : m_box(Gtk::Orientation::VERTICAL),
-      m_counter_box(Gtk::Orientation::HORIZONTAL),
       m_threshold_label("Threshold:"),
       m_window_label("Time Window (s):"),
       m_counter_start_button("Start Counter"),
       m_counter_time_label(""),  // Initialize the counter time label
+      m_close_button("Close"),
       m_threshold_spin(),
       m_window_spin() {
 
     set_title("Counter Window");
-    set_default_size(400, 200);
+    set_default_size(200, 150);
     set_modal(true);
     set_hide_on_close(true);
 
     // Configure spin buttons
-    m_threshold_spin.set_range(0, 1000);
+    m_threshold_spin.set_range(0, 10000);
     m_threshold_spin.set_increments(1, 10);
     m_threshold_spin.set_value(100);
 
     m_window_spin.set_range(1, 3600);
     m_window_spin.set_increments(1, 10);
     m_window_spin.set_value(60);
+
+    m_box.set_margin(10);
+    m_counter_grid.set_margin_bottom(10);
+    m_counter_grid.set_margin_top(10);
+    m_counter_grid.set_row_spacing(5);
+    m_counter_grid.set_column_spacing(5);
 
     // Connect signals
     m_counter_start_button.signal_clicked().connect(
@@ -41,16 +47,21 @@ counter_window::counter_window()
         sigc::mem_fun(*this, &counter_window::update_counter_time));
 
     // Add counter elements to counter box
-    m_counter_box.append(m_threshold_label);
-    m_counter_box.append(m_threshold_spin);
-    m_counter_box.append(m_window_label);
-    m_counter_box.append(m_window_spin);
-    m_counter_box.append(m_counter_start_button);
+    m_counter_grid.attach(m_threshold_label, 0, 0, 1, 1);
+    m_counter_grid.attach(m_threshold_spin, 1, 0, 1, 1);
+    m_counter_grid.attach(m_window_label, 0, 1, 1, 1);
+    m_counter_grid.attach(m_window_spin, 1, 1, 1, 1);
+    m_counter_grid.attach(m_counter_start_button, 1, 2, 1, 1);
     // Add the counter time label to the UI
     m_box.append(m_counter_time_label);
 
     // Add counter box to main box
-    m_box.append(m_counter_box);
+    m_box.append(m_counter_grid);
+    m_close_button.set_halign(Gtk::Align::END);
+    m_box.append(m_close_button);
+
+    m_close_button.signal_clicked().connect(
+        sigc::mem_fun(*this, &counter_window::hide));  // Hide the window when close is clicked
 
     set_child(m_box);
 }

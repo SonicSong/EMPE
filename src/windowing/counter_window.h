@@ -8,6 +8,7 @@
 #include <gtkmm/button.h>
 #include <gtkmm/window.h>
 #include <gtkmm/box.h>
+#include <gtkmm/grid.h>
 #include <gtkmm/spinbutton.h>
 #include <gtkmm/label.h>
 #include <thread>
@@ -46,7 +47,8 @@ private:
 
     Gtk::Box m_box;
     Gtk::Button m_start_button;
-    Gtk::Box m_counter_box;
+    Gtk::Grid m_counter_grid;
+    Gtk::Button m_close_button;
     Gtk::Label m_threshold_label;   // Label for threshold setting
     Gtk::SpinButton m_threshold_spin;  // Spin button for threshold value
     Gtk::SpinButton m_window_spin;
