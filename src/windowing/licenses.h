@@ -22,7 +22,6 @@ class Licenses : public Gtk::Window {
         void on_button_serial_cpp();
         void on_button_gtkchart();
         void on_button_empe();
-        void on_cancel_button();
         void display_license(const std::string& license_name);
         void update_info_label(const std::string& library_name, const std::string& repo_link);
 
