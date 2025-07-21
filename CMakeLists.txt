@@ -114,8 +114,6 @@ set(SOURCE_FILES
         src/windowing/graph_window.h
         src/counter.cpp
         src/counter.h
-        src/windowing/counter_window.cpp
-        src/windowing/counter_window.h
 )
 
 add_executable(EMPE ${SOURCE_FILES})
