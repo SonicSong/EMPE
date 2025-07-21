@@ -18,10 +18,12 @@ public:
     void setPort(const std::string& port) { selectedPort = port; }
     void setBaudRate(int baud) { selectedBaudRate = baud; }
     void setViewportWidth(int width) { m_viewport_width = width; }
+    void setAutoScrollViewport(bool autoScroll) { m_auto_scroll_viewport = autoScroll; }
 
     std::string getPort() const { return selectedPort; }
     int getBaudRate() const { return selectedBaudRate; }
     int getViewportWidth() const { return m_viewport_width; }
+    bool getAutoScrollViewport() const { return m_auto_scroll_viewport; }
 
     void setInterval(int interval) { }
 
@@ -31,12 +33,12 @@ public:
     static const std::vector<int> availableBaudRates;
 
 private:
-    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(800) {} // Default values
+    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(5000), m_auto_scroll_viewport(true) {} // Default values
 
     std::string selectedPort;
     int selectedBaudRate;
-    int m_graph_time_window = 60; // Default 60 seconds
     int m_viewport_width;  // Added viewport width setting
+    bool m_auto_scroll_viewport; // Whether to auto-scroll the viewport or just add points
 };
 
 #endif // SETTINGS_MANAGER_H
