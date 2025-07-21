@@ -30,14 +30,21 @@ SettingsWindow::SettingsWindow()
     m_interval_spin.set_tooltip_text("Update interval in milliseconds");
 
     m_viewport_width_label.set_text("Viewport Width (points):");
-    m_viewport_width_spin.set_range(100, 10000);
+    m_viewport_width_spin.set_range(50, 100000);
     m_viewport_width_spin.set_value(SettingsManager::getInstance().getViewportWidth());
     m_viewport_width_spin.set_increments(100, 1000);
+
+    // Configure auto-scroll checkbox
+    m_auto_scroll_check.set_label("Auto-scroll viewport");
+    m_auto_scroll_check.set_tooltip_text("When enabled, the viewport will automatically scroll to show new points. When disabled, the viewport will stay fixed and new points will be added to the right.");
+    m_auto_scroll_check.set_active(SettingsManager::getInstance().getAutoScrollViewport());
 
     // Add to grid
     m_grid.attach(m_viewport_width_label, 0, 3, 1, 1);
     m_grid.attach(m_viewport_width_spin, 1, 3, 1, 1);
 
+    // Add auto-scroll checkbox to grid
+    m_grid.attach(m_auto_scroll_check, 0, 4, 2, 1);
 
     // Add widgets to the grid
     m_grid.attach(m_port_label, 0, 0);
@@ -115,6 +122,7 @@ void SettingsWindow::on_apply_clicked() {
         settings.setPort(selected_port);
         settings.setBaudRate(std::stoi(baud_str));
         settings.setInterval(interval);
+        settings.setAutoScrollViewport(m_auto_scroll_check.get_active());
         hide();
     }
 }
