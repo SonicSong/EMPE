@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 
     // Gtk::Application::create();
 
+
     auto app = Gtk::Application::create("org.empe.application");
     return app->make_window_and_run<MainWindow>(argc, argv);  // Added argc, argv parameters
 }

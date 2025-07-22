@@ -66,11 +66,15 @@ class MainWindow : public Gtk::Window {
         Gtk::Label m_counter_time_label;  // New label for counter time display
 
         SettingsWindow* m_settings_window;
+        SettingsWindow* m_settings_window2;
         Licenses* m_licenses_window;
 
         std::thread connection_thread;
+        std::thread connection_thread2;
         bool is_running;
+        bool is_running2;
         std::vector<std::pair<int, int>> data_points; // pairs of (distance, time)
+        std::vector<std::pair<int, int>> data_points2; // pairs of (distance, time)
         Counter m_counter;
 };
 

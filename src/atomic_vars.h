@@ -4,5 +4,6 @@
 #include <atomic>
 
 extern std::atomic<bool> running;
+extern int global_start_time_one;
 
 #endif // ATOMIC_VARS_H

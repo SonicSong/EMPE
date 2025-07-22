@@ -17,7 +17,10 @@
 #include <gtk-4.0/gtk/gtkwidget.h>
 
 #include "../settings_manager.h"
+#include "../atomic_vars.h"
 #include "../ThreadSafeQueue.h"
+
+extern int global_start_time_one;
 
 class GraphWindow : public Gtk::Window {
 public:

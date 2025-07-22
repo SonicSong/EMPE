@@ -54,20 +54,16 @@ int connection_init() {
 
             // Don't detach the thread, we'll join it later for clean shutdown
             auto start_time = std::chrono::steady_clock::now();
-            const auto TIMEOUT = std::chrono::seconds(5);
+            const auto TIMEOUT = std::chrono::seconds(10);
 
             int distance, time;
             bool got_initial_data = false;
 
-            // Wait for initial data
-
-            // TODO: It hangs up the thread so GUI isn't responsible.
-            // TODO: Make this into a thread so that GTK can have the ability to display it.
             while (running) {
                 if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-                    // std::cout << "Received: Distance=" << distance
-                    //          << ", Time=" << time << std::endl;
                     got_initial_data = true;
+                    int *initial_time = &global_start_time_one;
+                    *initial_time = time;  // Store the initial time
                     break;
                 }
 
@@ -86,14 +82,17 @@ int connection_init() {
             }
 
             // Continuous reading loop
-            while (running) {
-                if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-                    // std::cout << "Distance= " << distance
-                    //          << ", Time= " << time << std::endl;
-                }
+            // while (running) {
+            //     // if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
+            //     //     // std::cout << "Distance= " << distance
+            //     //     //          << ", Time= " << time << std::endl;
+            //     // }
+            //
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // }
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
+            // Commented out for testing but without excess loops the program functions faster
+            // Now only wrap my head around fixing the initial data as it doesn't get it correctly
 
             // Clean shutdown
             read_data_thread.join();  // Wait for thread to finish

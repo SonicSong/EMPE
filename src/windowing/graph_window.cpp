@@ -95,12 +95,15 @@ gboolean GraphWindow::plot_point_callback(gpointer user_data) {
 }
 
 void GraphWindow::update_thread_function() {
+    int time_to_remove = global_start_time_one;
+
     while (m_running) {
         int distance, time;
+
         if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
             g_mutex_lock(&m_mutex);
 
-            double x = static_cast<double>(time);
+            double x = static_cast<double>(time - time_to_remove);
             double y = static_cast<double>(distance);
 
             // Store new point
