@@ -8,6 +8,7 @@
 #include <gtkmm/label.h>
 #include <gtkmm/grid.h>
 #include <gtkmm/spinbutton.h>
+#include <gtkmm/checkbutton.h>
 #include "../connection.h"
 #include "../settings_manager.h"
 
@@ -34,10 +35,9 @@ private:
     Gtk::Button m_apply_button;
     Gtk::Button m_cancel_button;
     Gtk::Box m_button_box;
-    Gtk::Label m_graph_window_label;
-    Gtk::SpinButton m_graph_window_spin;
     Gtk::Label m_viewport_width_label;
     Gtk::SpinButton m_viewport_width_spin;
+    Gtk::CheckButton m_auto_scroll_check;
 };
 
 #endif // SETTINGS_WINDOW_H

@@ -28,24 +28,6 @@ int connection_init() {
     std::string selectedPort = settings.getPort();
     int baudRate = settings.getBaudRate();
 
-    // Set up platform-specific signal handlers for clean shutdown
-    // #ifdef _WIN32
-    //     if (!SetConsoleCtrlHandler(windows_ctrl_handler, TRUE)) {
-    //         std::cerr << "Error setting up Windows control handler" << std::endl;
-    //         return 1;
-    //     }
-    // #else
-    //     struct sigaction sa;
-    //     sa.sa_handler = stop_reading;
-    //     sa.sa_flags = 0;
-    //     sigemptyset(&sa.sa_mask);
-    //
-    //     if (sigaction(SIGINT, &sa, nullptr) == -1) {
-    //         std::cerr << "Error setting up signal handler" << std::endl;
-    //         return 1;
-    //     }
-    // #endif
-
         if (!selectedPort.empty()) {
             // std::cout << selectedPort << std::endl;
 

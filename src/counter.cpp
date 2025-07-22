@@ -36,6 +36,12 @@ void Counter::startCounter() {
         // Set the start time when explicitly starting the counter
         lastUpdateTime_ = std::chrono::steady_clock::now();
 
+        // Clear any previous crossing times
+        {
+            std::lock_guard<std::mutex> lock(mtx_);
+            crossingTimes_.clear();
+        }
+
         // Start cleanup thread
         cleanup_thread_ = std::thread(&Counter::cleanupThread, this);
 
@@ -82,12 +88,17 @@ void Counter::updateValue(double value) {
     // Important: Do NOT update lastUpdateTime_ here
     // This prevents the counter timer from resetting when new distance values come in
 
+    // Debug: Print the current value and threshold for comparison
+    std::cerr << "Counter: value=" << value << ", threshold=" << threshold_
+              << ", wasBelow=" << (wasBelow_ ? "true" : "false") << std::endl;
+
     // Check if the value is below the threshold
     bool isBelow = value < threshold_;
 
     // Count a crossing when transitioning from above to below threshold
     if (isBelow && !wasBelow_) {
         // Record the crossing time
+        std::cerr << "CROSSED: Value " << value << " went below threshold " << threshold_ << std::endl;
         crossingTimes_.push_back(now);
         crossings_++;
     }
@@ -122,7 +133,7 @@ void Counter::cleanupThread() {
                     crossingTimes_.pop_front();
                     // if (crossings_ > 0) {
                     //     crossings_--;
-                    // }
+                    // } Commented out because it will start removing crossings
                 } else {
                     // If the oldest is still within window, the rest are too
                     break;
@@ -171,6 +182,5 @@ void Counter::cleanupThread() {
         remainingTimeCallback_(ss.str());
     }
 }
-
 
 //TODO: Add a method to stop the counter when the reading is stopped

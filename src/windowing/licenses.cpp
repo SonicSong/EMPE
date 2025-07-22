@@ -1301,7 +1301,7 @@ Licenses::Licenses()
     m_gtkchart_lic.signal_clicked().connect(
         sigc::mem_fun(*this, &Licenses::on_button_gtkchart));
     m_cancel_button.signal_clicked().connect(
-        sigc::mem_fun(*this, &Licenses::on_cancel_button));
+        sigc::mem_fun(*this, &Licenses::hide));
 
     // Show EMPE license by default
     on_button_empe();
@@ -1350,8 +1350,4 @@ void Licenses::on_button_re2() {
 void Licenses::on_button_serial_cpp() {
     update_info_label("serial_cpp", "https://github.com/ami-iit/serial_cpp");
     display_license(SERIAL_CPP_LICENSE);
-}
-
-void Licenses::on_cancel_button() {
-    hide();
 }

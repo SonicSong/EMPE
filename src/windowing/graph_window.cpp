@@ -7,9 +7,7 @@ GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
       m_chart(nullptr),
       m_running(true),
       m_save_button("Save data to csv"),
-      m_close_window("Close"),
-      current_max_x(100.0),
-      current_max_y(100.0) {
+      m_close_window("Close") {
 
     set_title("Distance-Time Graph");
     set_default_size(800, 600);
@@ -109,14 +107,22 @@ void GraphWindow::update_thread_function() {
             // Store new point
             m_data_points.emplace_back(x, y);
 
-
-            // Set x-axis range to show only the time window (viewport scroll)
-            double x_max = x;
-            double viewport_width = static_cast<double>(
-                SettingsManager::getInstance().getViewportWidth());
-            double x_min = (x_max > viewport_width) ? (x_max - viewport_width) : 0.0;
-            gtk_chart_set_x_min(m_chart, x_min);
-            gtk_chart_set_x_max(m_chart, x_max);
+            // Check if we should auto-scroll the viewport
+            if (SettingsManager::getInstance().getAutoScrollViewport()) {
+                // Auto-scroll mode: Set x-axis range to show only the time window (viewport scroll)
+                double x_max = x;
+                double viewport_width = static_cast<double>(
+                    SettingsManager::getInstance().getViewportWidth());
+                double x_min = (x_max > viewport_width) ? (x_max - viewport_width) : 0.0;
+                gtk_chart_set_x_min(m_chart, x_min);
+                gtk_chart_set_x_max(m_chart, x_max);
+            } else {
+                // Fixed viewport mode: Only update max if necessary to show all points
+                double current_x_max = gtk_chart_get_x_max(m_chart);
+                if (x > current_x_max) {
+                    gtk_chart_set_x_max(m_chart, x);
+                }
+            }
 
             // Update y-axis if needed
             if (y > current_max_y) {
