@@ -38,6 +38,16 @@ private:
     Gtk::Label m_viewport_width_label;
     Gtk::SpinButton m_viewport_width_spin;
     Gtk::CheckButton m_auto_scroll_check;
+
+    // UI Elements related to the second port/LIDAR device
+    Gtk::CheckButton second_port;
+    Gtk::Label m_port_label2;
+    Gtk::Label m_baud_label2;
+    Gtk::Label m_interval_label2;
+    Gtk::ComboBoxText m_port_combo2;
+    Gtk::ComboBoxText m_baud_combo2;
+    Gtk::SpinButton m_interval_spin2;
+    Gtk::Button m_scan_ports2;
 };
 
 #endif // SETTINGS_WINDOW_H
