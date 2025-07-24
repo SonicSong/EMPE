@@ -31,9 +31,6 @@ int connection_init() {
     int baudRate = settings.getBaudRate();
     bool secondPortEnabled = settings.getSecondPort();
 
-    // std::cerr << "DEBUG: First LiDAR - Port: " << selectedPort << ", Baud: " << baudRate << std::endl;
-    // std::cerr << "DEBUG: Second LiDAR enabled: " << (secondPortEnabled ? "YES" : "NO") << std::endl;
-
     std::string selectedPort2;
     int baudRate2 = 0;
 
@@ -41,7 +38,6 @@ int connection_init() {
     if (secondPortEnabled) {
         selectedPort2 = settings.getPort2();
         baudRate2 = settings.getBaudRate2();
-        // std::cerr << "DEBUG: Second LiDAR - Port: " << selectedPort2 << ", Baud: " << baudRate2 << std::endl;
     }
 
     if (selectedPort.empty()) {
@@ -50,17 +46,15 @@ int connection_init() {
     }
 
     // Start reading thread for the first LiDAR
-    // std::cerr << "DEBUG: Starting first LiDAR thread with deviceId=0" << std::endl;
     std::thread read_data_thread(serial_read, selectedPort, baudRate, 0); // DeviceId 0 for first LiDAR
 
     // If second LiDAR is enabled, start a second thread
     std::thread read_data_thread2;
     if (secondPortEnabled && !selectedPort2.empty()) {
-        // std::cerr << "DEBUG: Starting second LiDAR thread with deviceId=1" << std::endl;
         running_second_lidar = true;
         read_data_thread2 = std::thread(serial_read, selectedPort2, baudRate2, 1); // DeviceId 1 for second LiDAR
     } else if (secondPortEnabled) {
-        // std::cerr << "DEBUG: Second LiDAR enabled but no port selected!" << std::endl;
+        std::runtime_error("Second LiDAR enabled but no port selected");
     }
 
     // Don't detach the thread, we'll join it later for clean shutdown

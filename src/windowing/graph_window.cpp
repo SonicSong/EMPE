@@ -238,7 +238,7 @@ void GraphWindow::update_thread_function() {
             g_mutex_unlock(&m_mutex);
             updatedSecond = true;
         } else if (secondLidarEnabled && !m_chart2) {
-            std::cerr << "DEBUG: Second LiDAR enabled but m_chart2 is NULL!" << std::endl;
+
         }
 
         // If no updates, sleep a bit
