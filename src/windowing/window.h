@@ -42,11 +42,13 @@ class MainWindow : public Gtk::Window {
         void on_threshold_changed();
         void on_window_changed();
         void update_counter_time(const std::string& time_text);
+        void update_second_lidar_visibility(); // Add this method
 
         Gtk::Box m_box;
         Gtk::Button m_button;
         Gtk::Box m_button_box;  // For horizontal button layout
         Gtk::Box m_label_box;   // For horizontal label layout
+        Gtk::Box m_label_box2;
         Gtk::Box m_threshold_box;  // New box for threshold settings
         Gtk::Box m_counter_box;
 
@@ -57,7 +59,9 @@ class MainWindow : public Gtk::Window {
         Gtk::Button m_counter_start_button;
         GraphWindow* m_graph_window;
         Gtk::Label m_distance_label;
+        Gtk::Label m_distance_label2;
         Gtk::Label m_time_label;
+        Gtk::Label m_time_label2;
         // Gtk::Label m_crossings_label;  // New label for threshold crossings
         Gtk::Label m_threshold_label;   // Label for threshold setting
         Gtk::SpinButton m_threshold_spin;  // Spin button for threshold value
@@ -66,13 +70,10 @@ class MainWindow : public Gtk::Window {
         Gtk::Label m_counter_time_label;  // New label for counter time display
 
         SettingsWindow* m_settings_window;
-        SettingsWindow* m_settings_window2;
         Licenses* m_licenses_window;
 
         std::thread connection_thread;
-        std::thread connection_thread2;
         bool is_running;
-        bool is_running2;
         std::vector<std::pair<int, int>> data_points; // pairs of (distance, time)
         std::vector<std::pair<int, int>> data_points2; // pairs of (distance, time)
         Counter m_counter;

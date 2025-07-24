@@ -182,17 +182,12 @@ void SettingsWindow::on_apply_clicked() {
         settings.setAutoScrollViewport(m_auto_scroll_check.get_active());
 
         // Save second LiDAR settings
-        // settings.setSecondPort(second_port_enabled);
+        settings.setSecondPort(second_port_enabled);
         if (second_port_enabled == true) {
-            // Add code here to save second port settings to SettingsManager
-            // This would require additional methods in SettingsManager to store these values
-            // For now, we just toggle the visibility based on the checkbox
-
             Glib::ustring selected_port2 = m_port_combo2.get_active_id();
             Glib::ustring baud_str2 = m_baud_combo2.get_active_text();
             int interval2 = m_interval_spin2.get_value_as_int();
 
-            // These methods would need to be added to SettingsManager
             settings.setPort2(selected_port2);
             settings.setBaudRate2(std::stoi(baud_str2));
             settings.setSecondInterval(interval2);

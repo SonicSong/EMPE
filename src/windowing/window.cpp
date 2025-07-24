@@ -13,7 +13,9 @@ MainWindow::MainWindow()
       m_graph_button("Show Graph"),
       m_counter_start_button("Start Counter"),
       m_distance_label("Distance: 0"),
+      m_distance_label2("Distance 2: 0"),
       m_time_label("Time: 00:00:00"),
+      m_time_label2("Time: 00:00:00"),
       m_about_button("About"),
       m_settings_window(nullptr),
       m_graph_window(nullptr),
@@ -60,10 +62,22 @@ MainWindow::MainWindow()
     // Add labels to the horizontal label box
     m_label_box.append(m_distance_label);
     m_label_box.append(m_time_label);
+    m_label_box2.append(m_distance_label2);
+    m_label_box2.append(m_time_label2);
+
+    if (SettingsManager::getInstance().getSecondPort()) {
+        m_label_box2.show();
+    } else {
+        m_label_box2.hide();
+    }
 
     // Add the horizontal boxes to the main vertical box
     m_box.append(m_button_box);
     m_box.append(m_label_box);
+    m_box.append(m_label_box2);
+
+    // Initialize second LiDAR visibility
+    update_second_lidar_visibility();
 
     // Setup counter UI elements
     m_counter_box.set_spacing(10);
@@ -123,9 +137,9 @@ MainWindow::~MainWindow() {
 
 bool MainWindow::update_labels() {
     int distance, time;
-    if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
+    if (ThreadSafeQueue::getInstance().try_pop_device(distance, time, 0)) {
         // Store the data point
-        data_points.emplace_back(distance, time);
+        // data_points.emplace_back(distance, time);
 
         // Update counter with new distance value
         m_counter.updateValue(distance);
@@ -137,7 +151,7 @@ bool MainWindow::update_labels() {
 
         // Update distance label
         std::stringstream distance_str;
-        distance_str << "Distance: " << distance;
+        distance_str << "LiDAR " << 0 << " - Distance: " << distance;
         m_distance_label.set_text(distance_str.str());
 
         // Format time as HH:MM:SS
@@ -146,11 +160,39 @@ bool MainWindow::update_labels() {
         int seconds = time % 60;
 
         std::stringstream time_str;
-        time_str << "Time: "
+        time_str << " Time: "
                 << std::setfill('0') << std::setw(2) << hours << ":"
                 << std::setfill('0') << std::setw(2) << minutes << ":"
                 << std::setfill('0') << std::setw(2) << seconds;
         m_time_label.set_text(time_str.str());
+    }
+
+    if (SettingsManager::getInstance().getSecondPort()) {
+        int distance2, time2;
+        if (ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
+            // Store the data point for second LiDAR
+            // data_points2.emplace_back(distance2, time2);
+
+            // Update counter with new distance value for second LiDAR
+            m_counter.updateValue(distance2);
+
+            // Update distance label for second LiDAR
+            std::stringstream distance_str2;
+            distance_str2 << "LiDAR " << 1 << " - Distance: " << distance2;
+            m_distance_label2.set_text(distance_str2.str());
+
+            // Format time as HH:MM:SS for second LiDAR
+            int hours = time2 / 3600;
+            int minutes = (time2 % 3600) / 60;
+            int seconds = time2 % 60;
+
+            std::stringstream time_str2;
+            time_str2 << " Time: "
+                    << std::setfill('0') << std::setw(2) << hours << ":"
+                    << std::setfill('0') << std::setw(2) << minutes << ":"
+                    << std::setfill('0') << std::setw(2) << seconds;
+            m_time_label2.set_text(time_str2.str());
+        }
     }
     return true;
 }
@@ -186,6 +228,13 @@ void MainWindow::on_settings_button_clicked() {
     if (!m_settings_window) {
         m_settings_window = new SettingsWindow();
     }
+
+    // Connect to the settings window hide signal to update visibility when settings are closed
+    m_settings_window->signal_hide().connect([this]() {
+        // Update second LiDAR visibility when settings window is closed
+        update_second_lidar_visibility();
+    });
+
     m_settings_window->show();
 }
 
@@ -204,13 +253,13 @@ void MainWindow::on_licenses_window_hide() {
 }
 
 void MainWindow::create_graph() {
-    if (data_points.empty()) {
-        std::cerr << "No data to display" << std::endl;
-        return;
-    }
+    // if (data_points.empty()) {
+    //     std::cerr << "No data to display" << std::endl;
+    //     return;
+    // }
 
     if (!m_graph_window) {
-        m_graph_window = new GraphWindow(data_points);
+        m_graph_window = new GraphWindow();
         m_graph_window->signal_hide().connect(
             sigc::bind(sigc::mem_fun(*this, &MainWindow::on_graph_window_hide)));
     }
@@ -252,4 +301,12 @@ void MainWindow::on_threshold_changed() {
 
 void MainWindow::on_window_changed() {
     m_counter.setTimeWindow(std::chrono::seconds(static_cast<int>(m_window_spin.get_value())));
+}
+
+void MainWindow::update_second_lidar_visibility() {
+    if (SettingsManager::getInstance().getSecondPort()) {
+        m_label_box2.show();
+    } else {
+        m_label_box2.hide();
+    }
 }

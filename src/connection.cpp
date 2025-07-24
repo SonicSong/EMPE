@@ -2,6 +2,7 @@
 
 void stop_reading(int /*signal*/) {
     running = false;
+    running_second_lidar = false;
 }
 
 std::vector<DeviceInfo> connection_search() {
@@ -23,66 +24,108 @@ std::vector<DeviceInfo> connection_search() {
 
 int connection_init() {
     running = true;
+    running_second_lidar = false;
 
     auto& settings = SettingsManager::getInstance();
     std::string selectedPort = settings.getPort();
     int baudRate = settings.getBaudRate();
+    bool secondPortEnabled = settings.getSecondPort();
 
-        if (!selectedPort.empty()) {
-            // std::cout << selectedPort << std::endl;
+    // std::cerr << "DEBUG: First LiDAR - Port: " << selectedPort << ", Baud: " << baudRate << std::endl;
+    // std::cerr << "DEBUG: Second LiDAR enabled: " << (secondPortEnabled ? "YES" : "NO") << std::endl;
 
-            // Start reading thread
-            std::thread read_data_thread(serial_read, selectedPort, baudRate);
+    std::string selectedPort2;
+    int baudRate2 = 0;
 
-            // Don't detach the thread, we'll join it later for clean shutdown
-            auto start_time = std::chrono::steady_clock::now();
-            const auto TIMEOUT = std::chrono::seconds(10);
 
-            int distance, time;
-            bool got_initial_data = false;
+    if (secondPortEnabled) {
+        selectedPort2 = settings.getPort2();
+        baudRate2 = settings.getBaudRate2();
+        // std::cerr << "DEBUG: Second LiDAR - Port: " << selectedPort2 << ", Baud: " << baudRate2 << std::endl;
+    }
 
-            while (running) {
-                if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-                    got_initial_data = true;
-                    int *initial_time = &global_start_time_one;
-                    *initial_time = time;  // Store the initial time
-                    break;
-                }
+    if (selectedPort.empty()) {
+        std::cerr << "No ports selected" << std::endl;
+        return 1;
+    }
 
-                if (std::chrono::steady_clock::now() - start_time > TIMEOUT) {
-                    running = false;
-                    break;
-                }
+    // Start reading thread for the first LiDAR
+    // std::cerr << "DEBUG: Starting first LiDAR thread with deviceId=0" << std::endl;
+    std::thread read_data_thread(serial_read, selectedPort, baudRate, 0); // DeviceId 0 for first LiDAR
 
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }
+    // If second LiDAR is enabled, start a second thread
+    std::thread read_data_thread2;
+    if (secondPortEnabled && !selectedPort2.empty()) {
+        // std::cerr << "DEBUG: Starting second LiDAR thread with deviceId=1" << std::endl;
+        running_second_lidar = true;
+        read_data_thread2 = std::thread(serial_read, selectedPort2, baudRate2, 1); // DeviceId 1 for second LiDAR
+    } else if (secondPortEnabled) {
+        // std::cerr << "DEBUG: Second LiDAR enabled but no port selected!" << std::endl;
+    }
 
-            if (!got_initial_data) {
-                running = false;
-                read_data_thread.join();  // Wait for thread to finish
-                throw std::runtime_error("No data received within timeout");
-            }
+    // Don't detach the thread, we'll join it later for clean shutdown
+    auto start_time = std::chrono::steady_clock::now();
+    const auto TIMEOUT = std::chrono::seconds(10);
 
-            // Continuous reading loop
-            // while (running) {
-            //     // if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
-            //     //     // std::cout << "Distance= " << distance
-            //     //     //          << ", Time= " << time << std::endl;
-            //     // }
-            //
-            //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            // }
+    int distance, time;
+    bool got_initial_data = false;
 
-            // Commented out for testing but without excess loops the program functions faster
-            // Now only wrap my head around fixing the initial data as it doesn't get it correctly
-
-            // Clean shutdown
-            read_data_thread.join();  // Wait for thread to finish
-        } else {
-            std::cerr << "No ports found" << std::endl;
-            return 1;
+    // Wait for initial data from first LiDAR
+    while (running) {
+        if (ThreadSafeQueue::getInstance().try_pop_device(distance, time, 0)) {
+            got_initial_data = true;
+            global_start_time_one = time;  // Store the initial time for first LiDAR
+            break;
         }
 
-    return 0;
+        if (std::chrono::steady_clock::now() - start_time > TIMEOUT) {
+            running = false;
+            running_second_lidar = false;
+            break;
+        }
 
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+
+    if (got_initial_data && secondPortEnabled && running_second_lidar) {
+        start_time = std::chrono::steady_clock::now();
+
+        while (running && running_second_lidar) {
+            if (ThreadSafeQueue::getInstance().try_pop_device(distance, time, 1)) {
+                global_start_time_two = time;  // Store the initial time for second LiDAR
+                break;
+            }
+
+            if (std::chrono::steady_clock::now() - start_time > TIMEOUT) {
+                running_second_lidar = false;
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    }
+
+    if (!got_initial_data) {
+        running = false;
+        running_second_lidar = false;
+        read_data_thread.join();  // Wait for thread to finish
+
+        if (secondPortEnabled && read_data_thread2.joinable()) {
+            read_data_thread2.join();
+        }
+
+        throw std::runtime_error("No data received within timeout");
+    }
+
+    // Clean shutdown
+    if (read_data_thread.joinable()) {
+        read_data_thread.join();  // Wait for first thread to finish
+    }
+
+    if (secondPortEnabled && read_data_thread2.joinable()) {
+        read_data_thread2.join();  // Wait for second thread to finish
+    }
+
+    return 0;
 }

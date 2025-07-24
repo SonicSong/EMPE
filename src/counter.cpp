@@ -67,9 +67,6 @@ void Counter::stopCounter() {
         if (cleanup_thread_.joinable()) {
             cleanup_thread_.join();
         }
-
-        // Keep showing the last state of the counter (don't clear the UI)
-        // The UI will be updated through the regular callback mechanism
     }
 }
 
@@ -85,20 +82,9 @@ void Counter::updateValue(double value) {
     std::lock_guard<std::mutex> lock(mtx_);
     auto now = std::chrono::steady_clock::now();
 
-    // Important: Do NOT update lastUpdateTime_ here
-    // This prevents the counter timer from resetting when new distance values come in
-
-    // Debug: Print the current value and threshold for comparison
-    std::cerr << "Counter: value=" << value << ", threshold=" << threshold_
-              << ", wasBelow=" << (wasBelow_ ? "true" : "false") << std::endl;
-
-    // Check if the value is below the threshold
     bool isBelow = value < threshold_;
 
-    // Count a crossing when transitioning from above to below threshold
     if (isBelow && !wasBelow_) {
-        // Record the crossing time
-        std::cerr << "CROSSED: Value " << value << " went below threshold " << threshold_ << std::endl;
         crossingTimes_.push_back(now);
         crossings_++;
     }

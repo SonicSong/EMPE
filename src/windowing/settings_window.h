@@ -12,15 +12,6 @@
 #include "../connection.h"
 #include "../settings_manager.h"
 
-class LidarSettings {
-public:
-    std::string port;
-    int baudRate;
-    int interval;
-
-    LidarSettings(const std::string& p, int b, int i) : port(p), baudRate(b), interval(i) {}
-};
-
 class SettingsWindow : public Gtk::Window {
 public:
     SettingsWindow();

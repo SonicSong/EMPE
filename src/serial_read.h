@@ -10,6 +10,6 @@
 #include "atomic_vars.h"
 
 
-void serial_read(const std::string& portName, int baudrate);
+void serial_read(const std::string& portName, int baudrate, int deviceId);
 
 #endif //SERIAL_READ_H

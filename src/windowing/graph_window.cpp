@@ -2,39 +2,64 @@
 
 //TODO: Possible fix for how much data is displayed? Count elements in vector with data and later just trim to leave the most recent eg. 100 points. Don't use seconds as it's unrelaiable. Use temporary vector to store trimmed data. It should work as continously updated vector. Could be CPU heavy.
 // I need to think a bit more about it as it's not stupid but it's not easy. Also need to verify how do I get the data to be displayed if I get it directly from vector that stores the data or from the thread connection_init().
-GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
+GraphWindow::GraphWindow()
     : m_box(Gtk::Orientation::VERTICAL),
       m_chart(nullptr),
+      m_chart2(nullptr),
       m_running(true),
-      m_save_button("Save data to csv"),
+      m_save_button("Save LiDAR 1 data to CSV"),
+      m_save_button2("Save LiDAR 2 data to CSV"),
       m_close_window("Close") {
 
     set_title("Distance-Time Graph");
-    set_default_size(800, 600);
+    set_default_size(800, 800); // Increased height for two charts
     set_hide_on_close(true);
 
     g_mutex_init(&m_mutex);
 
-    // Create and setup the chart
+    // Create and setup the first chart
     m_chart = GTK_CHART(gtk_chart_new());
     setup_chart();
 
-    // Create a managed Gtk::Widget from the GtkWidget
+    // Create and setup the second chart (if second LiDAR is enabled)
+    if (SettingsManager::getInstance().getSecondPort() == true) {
+        m_chart2 = GTK_CHART(gtk_chart_new());
+        setup_second_chart();
+    }
+
+    // Create a managed Gtk::Widget from the first chart GtkWidget
     Gtk::Widget* chart_widget = Gtk::manage(Glib::wrap(GTK_WIDGET(m_chart), false));
     if (!chart_widget) {
-        std::cerr << "Failed to create chart widget" << std::endl;
+        std::cerr << "Failed to create first chart widget" << std::endl;
         return;
     }
 
     // Make sure the widget is visible
     chart_widget->set_visible(true);
     chart_widget->set_expand(true);  // Allow the chart to expand to fill space
+    chart_widget->set_size_request(800, 400);
 
-    // Set the chart as the window's child
-    //Gtk::Widget* chart_widget = Glib::wrap(GTK_WIDGET(m_chart));
-
-    // Add widgets to box with proper expansion
+    // Add first chart to box with proper expansion
     m_box.append(*chart_widget);
+
+    // Add second chart if enabled
+    if (SettingsManager::getInstance().getSecondPort() == true) {
+        Gtk::Widget* chart_widget2 = Gtk::manage(Glib::wrap(GTK_WIDGET(m_chart2), false));
+
+        if (!chart_widget2) {
+            std::cerr << "Failed to create second chart widget" << std::endl;
+            return;
+        }
+
+        if (chart_widget2) {
+            chart_widget2->set_visible(true);
+            chart_widget2->set_expand(true);
+            chart_widget2->set_size_request(800, 400);
+            m_box.append(*chart_widget2);
+        } else {
+            std::cerr << "Failed to create second chart widget" << std::endl;
+        }
+    }
 
     // Create close button with proper styling
     m_close_window.set_label("Close");
@@ -43,12 +68,20 @@ GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
     m_close_window.set_margin(5);
 
     // Setup save button
-    m_save_button.set_label("Save data to CSV");
+    m_save_button.set_label("Save LiDAR 1 data to CSV");
     m_save_button.set_halign(Gtk::Align::CENTER);
     m_save_button.set_margin(5);
+    m_box.append(m_save_button);
+
+    // Setup second save button (if second LiDAR is enabled)
+    if (SettingsManager::getInstance().getSecondPort() == true) {
+        m_save_button2.set_label("Save LiDAR 2 data to CSV");
+        m_save_button2.set_halign(Gtk::Align::CENTER);
+        m_save_button2.set_margin(5);
+        m_box.append(m_save_button2);
+    }
 
     // Add buttons to box
-    m_box.append(m_save_button);
     m_box.append(m_close_window);
 
     // Set box as main window content
@@ -57,8 +90,19 @@ GraphWindow::GraphWindow(const std::vector<std::pair<int, int>>& initial_data)
     // Connect signals
     m_close_window.signal_clicked().connect(
         sigc::mem_fun(*this, &GraphWindow::on_close_clicked));
-    m_save_button.signal_clicked().connect(
-        sigc::mem_fun(*this, &GraphWindow::on_save_clicked));
+
+    // Use lambda to call on_save_clicked with chartIndex 0 for first LiDAR
+    m_save_button.signal_clicked().connect([this]() {
+        on_save_clicked(0);
+    });
+
+    // Connect second save button signal if second LiDAR is enabled
+    if (SettingsManager::getInstance().getSecondPort() == true) {
+        // Use lambda to call on_save_clicked with chartIndex 1 for second LiDAR
+        m_save_button2.signal_clicked().connect([this]() {
+            on_save_clicked(1);
+        });
+    }
 
     // Start the update thread
     m_update_thread = std::thread(&GraphWindow::update_thread_function, this);
@@ -84,60 +128,123 @@ void GraphWindow::setup_chart() {
     gtk_chart_set_width(m_chart, 800);
 }
 
+void GraphWindow::setup_second_chart() {
+    gtk_chart_set_type(m_chart2, GTK_CHART_TYPE_LINE);
+    gtk_chart_set_title(m_chart2, "Distance-Time Graph (Second LiDAR)");
+    gtk_chart_set_label(m_chart2, "Distance Measurement (LiDAR 2)");
+    gtk_chart_set_x_label(m_chart2, "Time [s]");
+    gtk_chart_set_y_label(m_chart2, "Distance [units]");
+
+    gtk_chart_set_x_min(m_chart2, 0.0);
+    gtk_chart_set_y_max(m_chart2, current_max_y);
+    gtk_chart_set_width(m_chart2, 800);
+}
+
 gboolean GraphWindow::plot_point_callback(gpointer user_data) {
     Point* point = static_cast<Point*>(user_data);
-    // std::cerr << "Plotting: (" << point->x << ", " << point->y << ")\n";
     gtk_chart_plot_point(point->chart, point->x, point->y);
     delete point;
     return G_SOURCE_REMOVE;
 }
 
 void GraphWindow::update_thread_function() {
-    int time_to_remove = global_start_time_one;
+    int time_to_remove_first = global_start_time_one;
+    int time_to_remove_second = global_start_time_two;
+    bool secondLidarEnabled = SettingsManager::getInstance().getSecondPort();
 
     while (m_running) {
-        int distance, time;
+        int distance1, time1;
+        int distance2, time2;
+        bool updatedFirst = false;
+        bool updatedSecond = false;
 
-        if (ThreadSafeQueue::getInstance().try_pop(distance, time)) {
+        // Process data from first LiDAR
+        if (ThreadSafeQueue::getInstance().try_pop_device(distance1, time1, 0)) {
             g_mutex_lock(&m_mutex);
 
-            double x = static_cast<double>(time - time_to_remove);
-            double y = static_cast<double>(distance);
+            double x1 = static_cast<double>(time1 - time_to_remove_first);
+            double y1 = static_cast<double>(distance1);
 
-            // Store new point
-            m_data_points.emplace_back(x, y);
+            // Store new point for first LiDAR
+            m_data_points.emplace_back(x1, y1);
 
-            // Check if we should auto-scroll the viewport
+            // Update viewport for first chart
             if (SettingsManager::getInstance().getAutoScrollViewport()) {
-                // Auto-scroll mode: Set x-axis range to show only the time window (viewport scroll)
-                double x_max = x;
+                // Auto-scroll mode
                 double viewport_width = static_cast<double>(
                     SettingsManager::getInstance().getViewportWidth());
-                double x_min = (x_max > viewport_width) ? (x_max - viewport_width) : 0.0;
+                double x_min = (x1 > viewport_width) ? (x1 - viewport_width) : 0.0;
                 gtk_chart_set_x_min(m_chart, x_min);
-                gtk_chart_set_x_max(m_chart, x_max);
+                gtk_chart_set_x_max(m_chart, x1);
             } else {
-                // Fixed viewport mode: Only update max if necessary to show all points
+                // Fixed viewport mode
                 double current_x_max = gtk_chart_get_x_max(m_chart);
-                if (x > current_x_max) {
-                    gtk_chart_set_x_max(m_chart, x);
+                if (x1 > current_x_max) {
+                    gtk_chart_set_x_max(m_chart, x1);
                 }
             }
 
             // Update y-axis if needed
-            if (y > current_max_y) {
-                current_max_y = y * 1.2;
+            if (y1 > current_max_y) {
+                current_max_y = y1 * 1.2;
                 gtk_chart_set_y_max(m_chart, current_max_y);
             }
 
-            // Plot the point
-            Point* point = new Point{x, y, m_chart};
+            // Plot the point on the first chart
+            Point* point = new Point{x1, y1, m_chart};
             g_idle_add(plot_point_callback, point);
 
             g_mutex_unlock(&m_mutex);
+            updatedFirst = true;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        // Process data from second LiDAR (if enabled)
+        if (secondLidarEnabled && m_chart2 &&
+            ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
+            g_mutex_lock(&m_mutex);
+
+            double x2 = static_cast<double>(time2 - time_to_remove_second);
+            double y2 = static_cast<double>(distance2);
+
+            // Store new point for second LiDAR
+            m_data_points2.emplace_back(x2, y2);
+
+            // Update viewport for second chart
+            if (SettingsManager::getInstance().getAutoScrollViewport()) {
+                // Auto-scroll mode
+                double viewport_width = static_cast<double>(
+                    SettingsManager::getInstance().getViewportWidth());
+                double x_min = (x2 > viewport_width) ? (x2 - viewport_width) : 0.0;
+                gtk_chart_set_x_min(m_chart2, x_min);
+                gtk_chart_set_x_max(m_chart2, x2);
+            } else {
+                // Fixed viewport mode
+                double current_x_max = gtk_chart_get_x_max(m_chart2);
+                if (x2 > current_x_max) {
+                    gtk_chart_set_x_max(m_chart2, x2);
+                }
+            }
+
+            // Update y-axis if needed
+            if (y2 > current_max_y) {
+                current_max_y = y2 * 1.2;
+                gtk_chart_set_y_max(m_chart2, current_max_y);
+            }
+
+            // Plot the point on the second chart
+            Point* point2 = new Point{x2, y2, m_chart2};
+            g_idle_add(plot_point_callback, point2);
+
+            g_mutex_unlock(&m_mutex);
+            updatedSecond = true;
+        } else if (secondLidarEnabled && !m_chart2) {
+            std::cerr << "DEBUG: Second LiDAR enabled but m_chart2 is NULL!" << std::endl;
+        }
+
+        // If no updates, sleep a bit
+        if (!updatedFirst && !updatedSecond) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        }
     }
 }
 
@@ -145,13 +252,30 @@ void GraphWindow::on_close_clicked() {
     hide();
 }
 
-void GraphWindow::on_save_clicked() {
+void GraphWindow::on_save_clicked(int chartIndex) {
     auto now = std::time(nullptr);
     auto tm = *std::localtime(&now);
     std::ostringstream filename;
-    filename << "chart-" << std::put_time(&tm, "%Y%m%d-%H%M%S") << ".csv";
+    filename << "chart-lidar" << (chartIndex + 1) << "-" << std::put_time(&tm, "%Y%m%d-%H%M%S") << ".csv";
 
     g_mutex_lock(&m_mutex);
-    gtk_chart_save_csv(m_chart, filename.str().c_str(), nullptr);
+
+    if (chartIndex == 0) {
+        // Save first LiDAR chart
+        gtk_chart_save_csv(m_chart, filename.str().c_str(), nullptr);
+        std::cout << "Saved LiDAR 1 data to: " << filename.str() << std::endl;
+    } else if (chartIndex == 1 && m_chart2) {
+        // Save second LiDAR chart
+        gtk_chart_save_csv(m_chart2, filename.str().c_str(), nullptr);
+        std::cout << "Saved LiDAR 2 data to: " << filename.str() << std::endl;
+    } else {
+        std::cerr << "Error: Invalid chart index or chart not available" << std::endl;
+    }
+
     g_mutex_unlock(&m_mutex);
+}
+
+void GraphWindow::on_save_clicked_chart2() {
+    // Wrapper method for second chart
+    on_save_clicked(1);
 }

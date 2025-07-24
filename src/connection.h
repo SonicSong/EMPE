@@ -19,4 +19,6 @@ std::vector<DeviceInfo> connection_search();
 
 int connection_init();
 
+extern std::atomic<bool> running_second_lidar;
+
 #endif
