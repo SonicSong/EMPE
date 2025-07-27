@@ -38,6 +38,9 @@ private:
     Gtk::Box m_button_box;
     Gtk::Label m_viewport_width_label;
     Gtk::SpinButton m_viewport_width_spin;
+    Gtk::Label m_viewport_height_label;
+    Gtk::SpinButton m_viewport_height_spin;
+    Gtk::CheckButton m_auto_viewport_height;
     Gtk::CheckButton m_auto_scroll_check;
 
     // UI Elements related to the second port/LIDAR device

@@ -94,6 +94,22 @@ MainWindow::MainWindow()
     m_window_spin.set_increments(1, 10);
     m_window_spin.set_value(60);
 
+    // Configure reading frequency control
+    m_reading_freq_box.set_orientation(Gtk::Orientation::HORIZONTAL);
+    m_reading_freq_box.set_spacing(10);
+    m_reading_freq_label.set_text("Readings per second:");
+    m_reading_freq_spin.set_range(1, 50);
+    m_reading_freq_spin.set_increments(1, 5);
+    m_reading_freq_spin.set_value(settings.getReadoutsFromLidar());
+    m_reading_freq_spin.signal_value_changed().connect(
+        sigc::mem_fun(*this, &MainWindow::on_reading_freq_changed));
+
+    m_reading_freq_box.append(m_reading_freq_label);
+    m_reading_freq_box.append(m_reading_freq_spin);
+
+    // Add reading frequency control to main box
+    m_box.append(m_reading_freq_box);
+
     // Connect counter signals
     m_counter_start_button.signal_clicked().connect(
         sigc::mem_fun(*this, &MainWindow::on_counter_start_clicked));
@@ -300,6 +316,11 @@ void MainWindow::on_threshold_changed() {
 
 void MainWindow::on_window_changed() {
     m_counter.setTimeWindow(std::chrono::seconds(static_cast<int>(m_window_spin.get_value())));
+}
+
+void MainWindow::on_reading_freq_changed() {
+    // Update the reading frequency in the settings manager
+    SettingsManager::getInstance().setReadoutsFromLidar(m_reading_freq_spin.get_value());
 }
 
 void MainWindow::update_second_lidar_visibility() {

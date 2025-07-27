@@ -31,22 +31,34 @@ SettingsWindow::SettingsWindow()
     m_viewport_width_spin.set_value(SettingsManager::getInstance().getViewportWidth());
     m_viewport_width_spin.set_increments(100, 1000);
 
+    m_viewport_height_label.set_text("Viewport Height:");
+    m_viewport_height_spin.set_range(100, 10000);
+    m_viewport_height_spin.set_value(SettingsManager::getInstance().getViewportHeight());
+    m_viewport_height_spin.set_increments(100, 1000);
+
     // Configure auto-scroll checkbox
     m_auto_scroll_check.set_label("Auto-scroll viewport");
     m_auto_scroll_check.set_tooltip_text("When enabled, the viewport will automatically scroll to show new points. When disabled, the viewport will stay fixed and new points will be added to the right.");
     m_auto_scroll_check.set_active(SettingsManager::getInstance().getAutoScrollViewport());
 
+    m_auto_viewport_height.set_label("Auto-adjust viewport height");
+    m_auto_viewport_height.set_tooltip_text("When enabled, the viewport height will automatically");
+    m_auto_viewport_height.set_active(SettingsManager::getInstance().getAutoViewportHeight());
+
     // Add to grid
     m_grid.attach(m_viewport_width_label, 0, 3, 1, 1);
     m_grid.attach(m_viewport_width_spin, 1, 3, 1, 1);
+    m_grid.attach(m_viewport_height_label, 0, 4, 1, 1);
+    m_grid.attach(m_viewport_height_spin, 1, 4, 1, 1);
 
     m_second_port_check.set_label("Enable second LiDAR");
     m_second_port_check.set_tooltip_text("Enable reading and displaying data from a second LiDAR device.");
     m_second_port_check.set_active(SettingsManager::getInstance().getSecondPort());
 
     // Add auto-scroll checkbox to grid
-    m_grid.attach(m_auto_scroll_check, 0, 4, 2, 1);
-    m_grid.attach(m_second_port_check, 0, 5, 2, 1);;
+    m_grid.attach(m_auto_scroll_check, 0, 5, 2, 1);
+    m_grid.attach(m_auto_viewport_height, 0, 6, 2, 1);
+    m_grid.attach(m_second_port_check, 0, 7, 2, 1);;
 
     // Add widgets to the grid
     m_grid.attach(m_port_label, 0, 0);
@@ -60,15 +72,15 @@ SettingsWindow::SettingsWindow()
     m_button_box.set_halign(Gtk::Align::END);
     m_button_box.append(m_apply_button);
     m_button_box.append(m_cancel_button);
-    m_grid.attach(m_button_box, 0, 10, 3, 1); // Move button box lower to make room for second LiDAR controls
+    m_grid.attach(m_button_box, 0, 12, 3, 1); // Move button box lower to make room for second LiDAR controls
 
     // Add second LiDAR controls (initially hidden/shown based on checkbox)
-    m_grid.attach(m_port_label2, 0, 6, 1, 1);
-    m_grid.attach(m_port_combo2, 1, 6, 1, 1);
-    m_grid.attach(m_scan_ports2, 2, 6, 1, 1);
+    m_grid.attach(m_port_label2, 0, 8, 1, 1);
+    m_grid.attach(m_port_combo2, 1, 8, 1, 1);
+    m_grid.attach(m_scan_ports2, 2, 8, 1, 1);
 
-    m_grid.attach(m_baud_label2, 0, 7, 1, 1);
-    m_grid.attach(m_baud_combo2, 1, 7, 1, 1);
+    m_grid.attach(m_baud_label2, 0, 9, 1, 1);
+    m_grid.attach(m_baud_combo2, 1, 9, 1, 1);
 
     // // Update visibility based on current setting
     if (SettingsManager::getInstance().getSecondPort()) {
@@ -155,6 +167,7 @@ void SettingsWindow::on_apply_clicked() {
         settings.setPort(selected_port);
         settings.setBaudRate(std::stoi(baud_str));
         settings.setAutoScrollViewport(m_auto_scroll_check.get_active());
+        settings.setAutoViewportHeight(m_auto_viewport_height.get_active());
 
         // Save second LiDAR settings
         settings.setSecondPort(second_port_enabled);

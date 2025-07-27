@@ -18,7 +18,9 @@ public:
     void setPort(const std::string& port) { selectedPort = port; }
     void setBaudRate(int baud) { selectedBaudRate = baud; }
     void setViewportWidth(int width) { m_viewport_width = width; }
+    void setViewportHeight(int height) { m_viewport_height = height; }
     void setAutoScrollViewport(bool autoScroll) { m_auto_scroll_viewport = autoScroll; }
+    void setAutoViewportHeight(bool autoHeight) { m_auto_viewport_height = autoHeight; }
 
     void setSecondPort(bool secondPortEnabled) { m_second_port_enabled = secondPortEnabled; }
     void setPort2(const std::string& port) {selectedSecondPort = port;}
@@ -27,7 +29,9 @@ public:
     std::string getPort() const { return selectedPort; }
     int getBaudRate() const { return selectedBaudRate; }
     int getViewportWidth() const { return m_viewport_width; }
+    int getViewportHeight() const { return m_viewport_height; }
     bool getAutoScrollViewport() const { return m_auto_scroll_viewport; }
+    bool getAutoViewportHeight() const { return m_auto_viewport_height; }
 
     bool getSecondPort() const { return m_second_port_enabled; }
 
@@ -41,16 +45,18 @@ public:
     static const std::vector<int> availableBaudRates;
 
 private:
-    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(5000), m_auto_scroll_viewport(false),
-                       m_second_port_enabled(false), selectedSecondPort(""), selectedSecondBaudRate(115200) {}
+    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(5000), m_viewport_height(100), m_auto_scroll_viewport(false), m_auto_viewport_height(false),
+                       m_second_port_enabled(false), selectedSecondPort(""), selectedSecondBaudRate(115200), m_readouts_from_lidar(10) {}
 
     std::string selectedPort;
     int selectedBaudRate;
     int m_viewport_width;
+    int m_viewport_height;
 
     int m_readouts_from_lidar;
 
     bool m_auto_scroll_viewport;
+    bool m_auto_viewport_height;
 
     bool m_second_port_enabled;
     std::string selectedSecondPort;

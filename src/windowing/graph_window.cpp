@@ -165,10 +165,8 @@ void GraphWindow::update_thread_function() {
             double x1 = static_cast<double>(time1 - time_to_remove_first);
             double y1 = static_cast<double>(distance1);
 
-            // Store new point for first LiDAR
             m_data_points.emplace_back(x1, y1);
 
-            // Update viewport for first chart
             if (SettingsManager::getInstance().getAutoScrollViewport()) {
                 // Auto-scroll mode
                 double viewport_width = static_cast<double>(
@@ -184,10 +182,16 @@ void GraphWindow::update_thread_function() {
                 }
             }
 
-            // Update y-axis if needed
-            if (y1 > current_max_y) {
-                current_max_y = y1 * 1.2;
-                gtk_chart_set_y_max(m_chart, current_max_y);
+            if (SettingsManager::getInstance().getAutoViewportHeight()) {
+                // Auto-adjust y-axis height
+                if (y1 > current_max_y) {
+                    current_max_y = y1 * 1.2;
+                    gtk_chart_set_y_max(m_chart, current_max_y);
+                }
+            } else {
+                // Fixed y-axis height
+                double fixed_y_max = SettingsManager::getInstance().getViewportHeight();
+                gtk_chart_set_y_max(m_chart, fixed_y_max);
             }
 
             // Plot the point on the first chart
@@ -225,10 +229,16 @@ void GraphWindow::update_thread_function() {
                 }
             }
 
-            // Update y-axis if needed
-            if (y2 > current_max_y) {
-                current_max_y = y2 * 1.2;
-                gtk_chart_set_y_max(m_chart2, current_max_y);
+            if (SettingsManager::getInstance().getAutoViewportHeight()) {
+                // Auto-adjust y-axis height
+                if (y2 > current_max_y) {
+                    current_max_y = y2 * 1.2;
+                    gtk_chart_set_y_max(m_chart, current_max_y);
+                }
+            } else {
+                // Fixed y-axis height
+                double fixed_y_max = SettingsManager::getInstance().getViewportHeight();
+                gtk_chart_set_y_max(m_chart, fixed_y_max);
             }
 
             // Plot the point on the second chart

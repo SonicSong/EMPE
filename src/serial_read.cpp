@@ -6,6 +6,9 @@ void serial_read(const std::string& portName, int baudrate, int deviceId) {
         ThreadSafeQueue& queue = ThreadSafeQueue::getInstance();
         int distance_read = 0, time_read = 0;  // Declare here
 
+        // Get reading frequency from settings manager
+        auto& settings = SettingsManager::getInstance();
+
         std::string buffer;
         buffer.reserve(256); // Pre-allocate buffer to avoid reallocations
 
@@ -22,10 +25,28 @@ void serial_read(const std::string& portName, int baudrate, int deviceId) {
         std::string chunk;
         chunk.reserve(chunk_size);
 
+        // For reading frequency control
+        auto last_read_time = std::chrono::steady_clock::now();
+
         while (running.load() && (deviceId == 0 || (deviceId == 1 && running_second_lidar.load()))) {
-            int currentReadRate = g_readingsPerSecond.load();
-            auto readingInterval = std::chrono::milliseconds(1000 / currentReadRate);
-            auto startTime = std::chrono::steady_clock::now();
+            // Calculate delay based on reading frequency
+            // !!!THIS ONLY SLOWS DOWN READ OUT. NOT ACTUALLY MAKES STOPS IN READING!!!
+            // FIXME: Use a more precise timing mechanism
+            int readingsPerSecond = settings.getReadoutsFromLidar();
+            std::chrono::milliseconds delay(1000 / readingsPerSecond);
+
+            // Check if it's time to read
+            auto current_time = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_read_time);
+
+            if (elapsed < delay) {
+                // Not enough time has passed, sleep for a bit
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                continue;
+            }
+
+            // It's time to read
+            last_read_time = current_time;
 
             chunk = serial.read(chunk_size);
             if (!chunk.empty()) {
@@ -49,11 +70,6 @@ void serial_read(const std::string& portName, int baudrate, int deviceId) {
                         buffer.clear();
                     }
                 }
-            }
-
-            auto elapsedTime = std::chrono::steady_clock::now() - startTime;
-            if (elapsedTime < readingInterval) {
-                std::this_thread::sleep_for(readingInterval - elapsedTime);
             }
         }
 
