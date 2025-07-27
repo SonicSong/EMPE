@@ -28,10 +28,8 @@ private:
     Gtk::Grid m_grid;
     Gtk::Label m_port_label;
     Gtk::Label m_baud_label;
-    Gtk::Label m_interval_label;
     Gtk::ComboBoxText m_port_combo;
     Gtk::ComboBoxText m_baud_combo;
-    Gtk::SpinButton m_interval_spin;
     Gtk::Button m_scan_ports;
     Gtk::Button m_apply_button;
     Gtk::Button m_cancel_button;
@@ -46,10 +44,8 @@ private:
     Gtk::CheckButton m_second_port_check;
     Gtk::Label m_port_label2;
     Gtk::Label m_baud_label2;
-    Gtk::Label m_interval_label2;
     Gtk::ComboBoxText m_port_combo2;
     Gtk::ComboBoxText m_baud_combo2;
-    Gtk::SpinButton m_interval_spin2;
     Gtk::Button m_scan_ports2;
 };
 

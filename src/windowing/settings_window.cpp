@@ -7,7 +7,6 @@ SettingsWindow::SettingsWindow()
     : m_grid()
     , m_port_label("Port:")
     , m_baud_label("Baud Rate:")
-    , m_interval_label("Update Interval (ms):")
     , m_scan_ports("Scan Ports")
     , m_apply_button("Apply")
     , m_cancel_button("Cancel")
@@ -15,7 +14,6 @@ SettingsWindow::SettingsWindow()
     // Initialize second port components
     , m_port_label2("Second Port:")
     , m_baud_label2("Second Baud Rate:")
-    , m_interval_label2("Second Update Interval (ms):")
     , m_scan_ports2("Scan Ports")
 {
     set_title("EMPE Settings");
@@ -27,18 +25,6 @@ SettingsWindow::SettingsWindow()
     m_grid.set_row_spacing(5);
     m_grid.set_column_spacing(5);
     set_child(m_grid);
-
-    // Configure interval spin button
-    m_interval_spin.set_range(1, 32);
-    m_interval_spin.set_value(4);
-    m_interval_spin.set_increments(1, 10);
-    m_interval_spin.set_tooltip_text("Update interval in milliseconds");
-
-    // Configure second LiDAR interval spin button
-    m_interval_spin2.set_range(1, 32);
-    m_interval_spin2.set_value(4);
-    m_interval_spin2.set_increments(1, 10);
-    m_interval_spin2.set_tooltip_text("Update interval for second LiDAR in milliseconds");
 
     m_viewport_width_label.set_text("Viewport Width (points):");
     m_viewport_width_spin.set_range(50, 100000);
@@ -70,9 +56,6 @@ SettingsWindow::SettingsWindow()
     m_grid.attach(m_baud_label, 0, 1);
     m_grid.attach(m_baud_combo, 1, 1);
 
-    m_grid.attach(m_interval_label, 0, 2);
-    m_grid.attach(m_interval_spin, 1, 2);
-
     // Configure button box
     m_button_box.set_halign(Gtk::Align::END);
     m_button_box.append(m_apply_button);
@@ -87,9 +70,6 @@ SettingsWindow::SettingsWindow()
     m_grid.attach(m_baud_label2, 0, 7, 1, 1);
     m_grid.attach(m_baud_combo2, 1, 7, 1, 1);
 
-    m_grid.attach(m_interval_label2, 0, 8, 1, 1);
-    m_grid.attach(m_interval_spin2, 1, 8, 1, 1);
-
     // // Update visibility based on current setting
     if (SettingsManager::getInstance().getSecondPort()) {
         m_port_label2.show();
@@ -97,16 +77,13 @@ SettingsWindow::SettingsWindow()
         m_scan_ports2.show();
         m_baud_label2.show();
         m_baud_combo2.show();
-        m_interval_label2.show();
-        m_interval_spin2.show();
+
     } else {
         m_port_label2.hide();
         m_port_combo2.hide();
         m_scan_ports2.hide();
         m_baud_label2.hide();
         m_baud_combo2.hide();
-        m_interval_label2.hide();
-        m_interval_spin2.hide();
     }
 
     // Connect signals
@@ -168,7 +145,6 @@ void SettingsWindow::on_click_scan_ports() {
 void SettingsWindow::on_apply_clicked() {
     Glib::ustring selected_port = m_port_combo.get_active_id();
     Glib::ustring baud_str = m_baud_combo.get_active_text();
-    int interval = m_interval_spin.get_value_as_int();
     bool second_port_enabled = m_second_port_check.get_active();
 
     SettingsManager::getInstance().setViewportWidth(
@@ -178,7 +154,6 @@ void SettingsWindow::on_apply_clicked() {
         auto& settings = SettingsManager::getInstance();
         settings.setPort(selected_port);
         settings.setBaudRate(std::stoi(baud_str));
-        settings.setInterval(interval);
         settings.setAutoScrollViewport(m_auto_scroll_check.get_active());
 
         // Save second LiDAR settings
@@ -186,11 +161,9 @@ void SettingsWindow::on_apply_clicked() {
         if (second_port_enabled == true) {
             Glib::ustring selected_port2 = m_port_combo2.get_active_id();
             Glib::ustring baud_str2 = m_baud_combo2.get_active_text();
-            int interval2 = m_interval_spin2.get_value_as_int();
 
             settings.setPort2(selected_port2);
             settings.setBaudRate2(std::stoi(baud_str2));
-            settings.setSecondInterval(interval2);
         }
 
         hide();
@@ -209,16 +182,13 @@ void SettingsWindow::on_second_port_toggled() {
         m_scan_ports2.show();
         m_baud_label2.show();
         m_baud_combo2.show();
-        m_interval_label2.show();
-        m_interval_spin2.show();
     } else {
         m_port_label2.hide();
         m_port_combo2.hide();
         m_scan_ports2.hide();
         m_baud_label2.hide();
         m_baud_combo2.hide();
-        m_interval_label2.hide();
-        m_interval_spin2.hide();
+
     }
 }
 

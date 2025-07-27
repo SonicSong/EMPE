@@ -35,11 +35,10 @@ MainWindow::MainWindow()
     m_settings_button.signal_clicked().connect(
         sigc::mem_fun(*this, &MainWindow::on_settings_button_clicked));
 
-    // Update using the interval from settings
     auto& settings = SettingsManager::getInstance();
     Glib::signal_timeout().connect(
         sigc::mem_fun(*this, &MainWindow::update_labels),
-        static_cast<guint>(settings.getInterval())
+        static_cast<guint>(16)
     );
 
     // Add buttons to the horizontal button box

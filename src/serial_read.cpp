@@ -23,6 +23,10 @@ void serial_read(const std::string& portName, int baudrate, int deviceId) {
         chunk.reserve(chunk_size);
 
         while (running.load() && (deviceId == 0 || (deviceId == 1 && running_second_lidar.load()))) {
+            int currentReadRate = g_readingsPerSecond.load();
+            auto readingInterval = std::chrono::milliseconds(1000 / currentReadRate);
+            auto startTime = std::chrono::steady_clock::now();
+
             chunk = serial.read(chunk_size);
             if (!chunk.empty()) {
                 buffer += chunk;
@@ -45,6 +49,11 @@ void serial_read(const std::string& portName, int baudrate, int deviceId) {
                         buffer.clear();
                     }
                 }
+            }
+
+            auto elapsedTime = std::chrono::steady_clock::now() - startTime;
+            if (elapsedTime < readingInterval) {
+                std::this_thread::sleep_for(readingInterval - elapsedTime);
             }
         }
 

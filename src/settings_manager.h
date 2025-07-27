@@ -33,32 +33,28 @@ public:
 
     std::string getPort2() const { return selectedSecondPort; }
     int getBaudRate2() const { return selectedSecondBaudRate; }
-    int getViewportWidth2() const { return m_viewport_width2; }
-    bool getAutoScrollViewport2() const { return m_auto_scroll_viewport2; }
 
-    void setInterval(int interval) { }
-    void setSecondInterval(int interval) { }
-
-    int getInterval() const { return 4; }
+    void setReadoutsFromLidar(int readouts) { m_readouts_from_lidar = readouts; }
+    int getReadoutsFromLidar() const { return m_readouts_from_lidar; }
 
     // Common baud rates
     static const std::vector<int> availableBaudRates;
 
 private:
-    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(5000), m_auto_scroll_viewport(true),
-                       m_second_port_enabled(false), selectedSecondPort(""), selectedSecondBaudRate(115200),
-                       m_viewport_width2(5000), m_auto_scroll_viewport2(true) {}
+    SettingsManager() : selectedPort(""), selectedBaudRate(115200), m_viewport_width(5000), m_auto_scroll_viewport(false),
+                       m_second_port_enabled(false), selectedSecondPort(""), selectedSecondBaudRate(115200) {}
 
     std::string selectedPort;
     int selectedBaudRate;
     int m_viewport_width;
+
+    int m_readouts_from_lidar;
+
     bool m_auto_scroll_viewport;
 
     bool m_second_port_enabled;
     std::string selectedSecondPort;
     int selectedSecondBaudRate;
-    int m_viewport_width2;
-    bool m_auto_scroll_viewport2;
 };
 
 #endif // SETTINGS_MANAGER_H

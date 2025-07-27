@@ -1,10 +1,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <iostream>
-#include <thread>
 #include <atomic>
-#include <csignal>
 #include <vector>
 
 #include "serial_read.h"
