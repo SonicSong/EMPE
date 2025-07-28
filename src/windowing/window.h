@@ -45,6 +45,7 @@ class MainWindow : public Gtk::Window {
         void update_second_lidar_visibility();
 
         void on_reading_freq_changed();
+        void update_reading_freq();
 
         Gtk::Box m_box;
         Gtk::Button m_button;
@@ -74,6 +75,7 @@ class MainWindow : public Gtk::Window {
         Gtk::Box m_reading_freq_box;
         Gtk::Label m_reading_freq_label;
         Gtk::SpinButton m_reading_freq_spin;
+        Gtk::CheckButton m_limit_readings_check;
 
         SettingsWindow* m_settings_window;
         Licenses* m_licenses_window;

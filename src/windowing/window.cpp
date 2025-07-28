@@ -323,6 +323,11 @@ void MainWindow::on_reading_freq_changed() {
     SettingsManager::getInstance().setReadoutsFromLidar(m_reading_freq_spin.get_value());
 }
 
+void MainWindow::update_reading_freq() {
+
+}
+
+
 void MainWindow::update_second_lidar_visibility() {
     if (SettingsManager::getInstance().getSecondPort()) {
         m_label_box2.show();
