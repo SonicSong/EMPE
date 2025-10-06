@@ -17,6 +17,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
+            abseil \
             cmake \
             pkg-config \
             libgtkmm-4.0-dev \
@@ -42,7 +43,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install cmake pkg-config gtkmm4 gtk4
+          brew install cmake pkg-config gtkmm4 gtk4 abseil git
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -77,6 +78,7 @@ jobs:
             mingw-w64-ucrt-x86_64-pkg-config
             mingw-w64-ucrt-x86_64-gtk4
             mingw-w64-ucrt-x86_64-gtkmm-4.0
+            mingw-w64-ucrt-x86_64-abseil-cpp
 
       - name: Configure CMake
         run: |
