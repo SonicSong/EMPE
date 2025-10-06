@@ -1,4 +1,5 @@
 name: Build Multi-Platform
+
 on:
   push:
     branches: [ main, master ]
@@ -22,7 +23,8 @@ jobs:
             libabsl-dev \
             libgtkmm-4.0-dev \
             libgtk-4-dev \
-            git
+            git \
+            patchelf
 
       - name: BUILD ABSEIL BECAUSE UBUNTU
         run: |
@@ -38,11 +40,33 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
+      - name: Bundle Linux libraries
+        run: |
+          mkdir -p build/dist/lib
+          cp build/EMPE build/dist/
+          
+          # Copy all shared library dependencies
+          ldd build/EMPE | grep "=> /" | awk '{print $3}' | while read lib; do
+            cp "$lib" build/dist/lib/ 2>/dev/null || true
+          done
+          
+          # Set RPATH to look for libraries in the lib directory
+          patchelf --set-rpath '$ORIGIN/lib' build/dist/EMPE
+          
+          # Create launcher script
+          cat > build/dist/empe.sh << 'EOF'
+          #!/bin/bash
+          SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:$LD_LIBRARY_PATH"
+          "$SCRIPT_DIR/EMPE" "$@"
+          EOF
+          chmod +x build/dist/empe.sh
+
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
         with:
           name: EMPE-linux
-          path: build/EMPE
+          path: build/dist/
 
   build-macos:
     runs-on: macos-latest
@@ -51,7 +75,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install cmake pkg-config gtkmm4 gtk4 abseil git
+          brew install cmake pkg-config gtkmm4 gtk4 abseil git create-dmg
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -59,11 +83,88 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
+      - name: Create macOS App Bundle
+        run: |
+          mkdir -p build/EMPE.app/Contents/{MacOS,Resources,Frameworks}
+          
+          # Copy executable
+          cp build/EMPE build/EMPE.app/Contents/MacOS/
+          
+          # Create Info.plist
+          cat > build/EMPE.app/Contents/Info.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>EMPE</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.sonicsong.empe</string>
+              <key>CFBundleName</key>
+              <string>EMPE</string>
+              <key>CFBundleVersion</key>
+              <string>1.0.0</string>
+              <key>CFBundleShortVersionString</key>
+              <string>1.0.0</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+          
+          # Bundle all dylib dependencies
+          function bundle_libs() {
+              local binary="$1"
+              otool -L "$binary" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read lib; do
+                  lib_name=$(basename "$lib")
+                  if [ ! -f "build/EMPE.app/Contents/Frameworks/$lib_name" ]; then
+                      cp "$lib" "build/EMPE.app/Contents/Frameworks/" 2>/dev/null || true
+                      chmod +w "build/EMPE.app/Contents/Frameworks/$lib_name"
+                      install_name_tool -id "@executable_path/../Frameworks/$lib_name" \
+                        "build/EMPE.app/Contents/Frameworks/$lib_name" 2>/dev/null || true
+                      bundle_libs "build/EMPE.app/Contents/Frameworks/$lib_name"
+                  fi
+              done
+          }
+          
+          bundle_libs build/EMPE.app/Contents/MacOS/EMPE
+          
+          # Fix install names in the executable
+          otool -L build/EMPE.app/Contents/MacOS/EMPE | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read lib; do
+              lib_name=$(basename "$lib")
+              install_name_tool -change "$lib" "@executable_path/../Frameworks/$lib_name" \
+                build/EMPE.app/Contents/MacOS/EMPE 2>/dev/null || true
+          done
+          
+          # Fix install names in bundled libraries
+          for lib in build/EMPE.app/Contents/Frameworks/*.dylib; do
+              if [ -f "$lib" ]; then
+                  otool -L "$lib" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read dep; do
+                      dep_name=$(basename "$dep")
+                      install_name_tool -change "$dep" "@executable_path/../Frameworks/$dep_name" \
+                        "$lib" 2>/dev/null || true
+                  done
+              fi
+          done
+
+      - name: Create DMG
+        run: |
+          create-dmg \
+            --volname "EMPE" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --app-drop-link 450 185 \
+            "build/EMPE.dmg" \
+            "build/EMPE.app" || cp -r build/EMPE.app build/EMPE-macos.app
+
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: EMPE-macos
-          path: build/EMPE
+          path: |
+            build/*.dmg
+            build/EMPE.app
 
   build-windows:
     runs-on: windows-latest
@@ -98,13 +199,43 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Copy GTK4 runtime dependencies
+      - name: Bundle Windows runtime and libraries
         run: |
           mkdir -p build/dist
           cp build/EMPE.exe build/dist/
           
-          # Copy all necessary DLLs
-          ldd build/EMPE.exe | grep -i mingw | awk '{print $3}' | xargs -I {} cp {} build/dist/ || true
+          # Copy all DLL dependencies
+          ldd build/EMPE.exe | grep -i mingw | awk '{print $3}' | xargs -I {} cp {} build/dist/
+          
+          # Copy GTK4 runtime data files
+          mkdir -p build/dist/share
+          cp -r /ucrt64/share/glib-2.0 build/dist/share/ 2>/dev/null || true
+          cp -r /ucrt64/share/gtk-4.0 build/dist/share/ 2>/dev/null || true
+          cp -r /ucrt64/share/icons build/dist/share/ 2>/dev/null || true
+          
+          # Copy GTK4 GDK-PixBuf loaders
+          mkdir -p build/dist/lib
+          cp -r /ucrt64/lib/gdk-pixbuf-2.0 build/dist/lib/ 2>/dev/null || true
+          
+          # Create settings.ini for GTK
+          mkdir -p build/dist/etc/gtk-4.0
+          cat > build/dist/etc/gtk-4.0/settings.ini << EOF
+          [Settings]
+          gtk-theme-name=Windows-10
+          gtk-font-name=Segoe UI 10
+          gtk-icon-theme-name=Adwaita
+          EOF
+          
+          # Create launcher script to set environment variables
+          cat > build/dist/empe-launcher.bat << 'EOF'
+          @echo off
+          set "SCRIPT_DIR=%~dp0"
+          set "GTK_DATA_PREFIX=%SCRIPT_DIR%"
+          set "GDK_PIXBUF_MODULEDIR=%SCRIPT_DIR%lib\gdk-pixbuf-2.0\2.10.0\loaders"
+          set "GDK_PIXBUF_MODULE_FILE=%SCRIPT_DIR%lib\gdk-pixbuf-2.0\2.10.0\loaders.cache"
+          set "XDG_DATA_DIRS=%SCRIPT_DIR%share"
+          start "" "%SCRIPT_DIR%EMPE.exe" %*
+          EOF
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
