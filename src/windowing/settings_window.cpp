@@ -27,14 +27,14 @@ SettingsWindow::SettingsWindow()
     set_child(m_grid);
 
     m_viewport_width_label.set_text("Viewport Width (points):");
-    m_viewport_width_spin.set_range(50, 100000);
+    m_viewport_width_spin.set_range(100, 100000);
     m_viewport_width_spin.set_value(SettingsManager::getInstance().getViewportWidth());
     m_viewport_width_spin.set_increments(100, 1000);
 
     m_viewport_height_label.set_text("Viewport Height:");
-    m_viewport_height_spin.set_range(100, 10000);
+    m_viewport_height_spin.set_range(10, 20000);
     m_viewport_height_spin.set_value(SettingsManager::getInstance().getViewportHeight());
-    m_viewport_height_spin.set_increments(100, 1000);
+    m_viewport_height_spin.set_increments(10, 1000);
 
     // Configure auto-scroll checkbox
     m_auto_scroll_check.set_label("Auto-scroll viewport");

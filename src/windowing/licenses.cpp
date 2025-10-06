@@ -1316,6 +1316,7 @@ void Licenses::display_license(const std::string& license_name) {
 void Licenses::update_info_label(const std::string& library_name, const std::string& repo_link) {
     if (repo_link == "https://github.com/SonicSong/EMPE") {
         std::string markup = "<b>" + library_name + "</b>\n" + "<b>" + "Robert Starosta" + "</b>\n" +
+          "Program completed as a final project for the Procedural Programming course\n" + "under Ph.D. Roman Rosiek, prof. UKEN \n" +
                           "<a href=\"" + repo_link + "\">" + repo_link + "</a>";
         m_info_label.set_markup(markup);
         m_info_label.set_use_markup(true);
