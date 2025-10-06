@@ -200,6 +200,7 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Bundle Windows runtime and libraries
+        shell: bash
         run: |
           mkdir -p build/dist
           cp build/EMPE.exe build/dist/
