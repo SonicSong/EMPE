@@ -24,6 +24,14 @@ jobs:
             libgtk-4-dev \
             git
 
+      - name: BUILD ABSEIL BECAUSE UBUNTU
+        run: |
+          git clone https://github.com/abseil/abseil-cpp.git
+          cd abseil-cpp
+          cmake -B build -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
+
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
 
