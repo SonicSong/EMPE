@@ -24,7 +24,10 @@ jobs:
             libgtkmm-4.0-dev \
             libgtk-4-dev \
             git \
-            patchelf
+            patchelf \
+            libglib2.0-bin \
+            libgdk-pixbuf2.0-bin \
+            adwaita-icon-theme
 
       - name: BUILD ABSEIL BECAUSE UBUNTU
         run: |
@@ -40,27 +43,94 @@ jobs:
       - name: Build
         run: cmake --build build --config Release
 
-      - name: Bundle Linux libraries
+      - name: Bundle Linux runtime and libraries (recursive)
+        shell: bash
         run: |
-          mkdir -p build/dist/lib
-          cp build/EMPE build/dist/
-          
-          # Copy all shared library dependencies
-          ldd build/EMPE | grep "=> /" | awk '{print $3}' | while read lib; do
-            cp "$lib" build/dist/lib/ 2>/dev/null || true
+          set -euo pipefail
+          ROOT="$PWD/build/dist"
+          mkdir -p "$ROOT/lib" "$ROOT/share"
+          cp build/EMPE "$ROOT/"
+
+          # Copy direct deps of the main binary
+          copy_deps() {
+            local bin="$1"
+            ldd "$bin" | awk '/=> \// {print $3} /^\/lib/ {print $1}' | while read -r lib; do
+              [ -f "$lib" ] || continue
+              local base="$(basename "$lib")"
+              if [ ! -f "$ROOT/lib/$base" ]; then
+                cp -L "$lib" "$ROOT/lib/" || true
+              fi
+            done
+          }
+
+          # Recursively copy deps for everything in lib/ until closure
+          recursive_copy() {
+            local changed=1
+            while [ "$changed" -eq 1 ]; do
+              changed=0
+              # For the main executable
+              copy_deps "$ROOT/EMPE"
+              # For each copied library
+              for so in "$ROOT"/lib/*.so*; do
+                [ -f "$so" ] || continue
+                before="$(ls -1 "$ROOT/lib" | wc -l || true)"
+                copy_deps "$so"
+                after="$(ls -1 "$ROOT/lib" | wc -l || true)"
+                if [ "$after" != "$before" ]; then
+                  changed=1
+                fi
+              done
+            done
+          }
+
+          recursive_copy
+
+          # Don't try to ship the dynamic loader or core glibc libs; they must come from the system
+          rm -f "$ROOT/lib/ld-linux-"*.so* "$ROOT/lib/libc.so."* "$ROOT/lib/libm.so."* "$ROOT/lib/libpthread.so."* "$ROOT/lib/librt.so."* "$ROOT/lib/libdl.so."* || true
+
+          # Fix RPATH for the main exe and all bundled libs to prefer our lib dir
+          patchelf --set-rpath '$ORIGIN/lib' "$ROOT/EMPE"
+          for so in "$ROOT"/lib/*.so*; do
+            [ -f "$so" ] || continue
+            patchelf --set-rpath '$ORIGIN' "$so" || true
           done
-          
-          # Set RPATH to look for libraries in the lib directory
-          patchelf --set-rpath '$ORIGIN/lib' build/dist/EMPE
-          
-          # Create launcher script
-          cat > build/dist/empe.sh << 'EOF'
+
+          # Bundle GTK runtime data
+          # 1) GLib GSettings schemas
+          mkdir -p "$ROOT/share/glib-2.0/schemas"
+          rsync -a /usr/share/glib-2.0/schemas/ "$ROOT/share/glib-2.0/schemas/" || true
+          glib-compile-schemas "$ROOT/share/glib-2.0/schemas" || true
+
+          # 2) GTK shared data and icons (best-effort)
+          mkdir -p "$ROOT/share"
+          cp -r /usr/share/gtk-4.0 "$ROOT/share/gtk-4.0" 2>/dev/null || true
+          mkdir -p "$ROOT/share/icons"
+          cp -r /usr/share/icons/Adwaita "$ROOT/share/icons/Adwaita" 2>/dev/null || true
+
+          # 3) gdk-pixbuf loaders and cache
+          LOADER_DIR="$(find /usr/lib -type d -path '*/gdk-pixbuf-2.0/2.*.*/loaders' | head -n1 || true)"
+          if [ -n "$LOADER_DIR" ]; then
+            mkdir -p "$ROOT/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+            cp -a "$LOADER_DIR/"* "$ROOT/lib/gdk-pixbuf-2.0/2.10.0/loaders/" 2>/dev/null || true
+            GDK_PIXBUF_MODULEDIR="$ROOT/lib/gdk-pixbuf-2.0/2.10.0/loaders" \
+              gdk-pixbuf-query-loaders > "$ROOT/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" || true
+          fi
+
+          # Create launcher script with necessary env
+          cat > "$ROOT/empe.sh" << 'EOF'
           #!/bin/bash
+          set -e
           SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          export LD_LIBRARY_PATH="$SCRIPT_DIR/lib:$LD_LIBRARY_PATH"
-          "$SCRIPT_DIR/EMPE" "$@"
+          export LD_LIBRARY_PATH="$SCRIPT_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          # Let GLib/GTK find schemas and data inside our bundle
+          export XDG_DATA_DIRS="$SCRIPT_DIR/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+          export GSETTINGS_SCHEMA_DIR="$SCRIPT_DIR/share/glib-2.0/schemas"
+          # gdk-pixbuf loaders
+          export GDK_PIXBUF_MODULEDIR="$SCRIPT_DIR/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+          export GDK_PIXBUF_MODULE_FILE="$SCRIPT_DIR/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+          exec "$SCRIPT_DIR/EMPE" "$@"
           EOF
-          chmod +x build/dist/empe.sh
+          chmod +x "$ROOT/empe.sh"
 
       - name: Upload Linux artifact
         uses: actions/upload-artifact@v4
@@ -84,14 +154,17 @@ jobs:
         run: cmake --build build --config Release
 
       - name: Create macOS App Bundle
+        shell: bash
         run: |
-          mkdir -p build/EMPE.app/Contents/{MacOS,Resources,Frameworks}
-          
-          # Copy executable
-          cp build/EMPE build/EMPE.app/Contents/MacOS/
-          
-          # Create Info.plist
-          cat > build/EMPE.app/Contents/Info.plist << EOF
+          set -euo pipefail
+          APP="build/EMPE.app"
+          mkdir -p "$APP/Contents"/{MacOS,Resources,Frameworks}
+
+          # Copy executable and rename to .bin; we'll use a wrapper as CFBundleExecutable
+          cp build/EMPE "$APP/Contents/MacOS/EMPE.bin"
+
+          # Create Info.plist (wrapper will be called EMPE)
+          cat > "$APP/Contents/Info.plist" << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -111,41 +184,73 @@ jobs:
           </dict>
           </plist>
           EOF
-          
-          # Bundle all dylib dependencies
-          function bundle_libs() {
-              local binary="$1"
-              otool -L "$binary" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read lib; do
-                  lib_name=$(basename "$lib")
-                  if [ ! -f "build/EMPE.app/Contents/Frameworks/$lib_name" ]; then
-                      cp "$lib" "build/EMPE.app/Contents/Frameworks/" 2>/dev/null || true
-                      chmod +w "build/EMPE.app/Contents/Frameworks/$lib_name"
-                      install_name_tool -id "@executable_path/../Frameworks/$lib_name" \
-                        "build/EMPE.app/Contents/Frameworks/$lib_name" 2>/dev/null || true
-                      bundle_libs "build/EMPE.app/Contents/Frameworks/$lib_name"
-                  fi
-              done
-          }
-          
-          bundle_libs build/EMPE.app/Contents/MacOS/EMPE
-          
-          # Fix install names in the executable
-          otool -L build/EMPE.app/Contents/MacOS/EMPE | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read lib; do
-              lib_name=$(basename "$lib")
-              install_name_tool -change "$lib" "@executable_path/../Frameworks/$lib_name" \
-                build/EMPE.app/Contents/MacOS/EMPE 2>/dev/null || true
-          done
-          
-          # Fix install names in bundled libraries
-          for lib in build/EMPE.app/Contents/Frameworks/*.dylib; do
-              if [ -f "$lib" ]; then
-                  otool -L "$lib" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read dep; do
-                      dep_name=$(basename "$dep")
-                      install_name_tool -change "$dep" "@executable_path/../Frameworks/$dep_name" \
-                        "$lib" 2>/dev/null || true
-                  done
+
+          BREW_PREFIX="$(brew --prefix)"
+
+          # Function to copy dylib deps recursively into Frameworks and fix ids
+          bundle_libs() {
+            local binary="$1"
+            otool -L "$binary" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read -r lib; do
+              local lib_name; lib_name="$(basename "$lib")"
+              if [ ! -f "$APP/Contents/Frameworks/$lib_name" ]; then
+                cp "$lib" "$APP/Contents/Frameworks/" 2>/dev/null || true
+                chmod +w "$APP/Contents/Frameworks/$lib_name" || true
+                install_name_tool -id "@executable_path/../Frameworks/$lib_name" "$APP/Contents/Frameworks/$lib_name" 2>/dev/null || true
+                bundle_libs "$APP/Contents/Frameworks/$lib_name"
               fi
+            done
+          }
+
+          # Bundle libs for the binary, then fix its references
+          bundle_libs "$APP/Contents/MacOS/EMPE.bin"
+
+          otool -L "$APP/Contents/MacOS/EMPE.bin" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read -r lib; do
+            lib_name="$(basename "$lib")"
+            install_name_tool -change "$lib" "@executable_path/../Frameworks/$lib_name" "$APP/Contents/MacOS/EMPE.bin" 2>/dev/null || true
           done
+
+          # Fix nested deps inside Frameworks to reference each other within the bundle
+          for lib in "$APP/Contents/Frameworks/"*.dylib; do
+            [ -f "$lib" ] || continue
+            otool -L "$lib" | grep -E '/opt/homebrew|/usr/local' | awk '{print $1}' | while read -r dep; do
+              dep_name="$(basename "$dep")"
+              install_name_tool -change "$dep" "@executable_path/../Frameworks/$dep_name" "$lib" 2>/dev/null || true
+            done
+          done
+
+          # Bundle GTK runtime data into Resources
+          mkdir -p "$APP/Contents/Resources/share" "$APP/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+
+          # 1) GLib schemas
+          rsync -a "$BREW_PREFIX/share/glib-2.0/schemas/" "$APP/Contents/Resources/share/glib-2.0/schemas/" || true
+          "$BREW_PREFIX/bin/glib-compile-schemas" "$APP/Contents/Resources/share/glib-2.0/schemas" || true
+
+          # 2) GTK shared data and icons
+          cp -R "$BREW_PREFIX/share/gtk-4.0" "$APP/Contents/Resources/share/gtk-4.0" 2>/dev/null || true
+          mkdir -p "$APP/Contents/Resources/share/icons"
+          cp -R "$BREW_PREFIX/share/icons/Adwaita" "$APP/Contents/Resources/share/icons/Adwaita" 2>/dev/null || true
+
+          # 3) gdk-pixbuf loaders and cache
+          if [ -d "$BREW_PREFIX/lib/gdk-pixbuf-2.0/2.10.0/loaders" ]; then
+            cp -a "$BREW_PREFIX/lib/gdk-pixbuf-2.0/2.10.0/loaders/"* "$APP/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders/" || true
+            GDK_PIXBUF_MODULEDIR="$APP/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders" \
+              "$BREW_PREFIX/bin/gdk-pixbuf-query-loaders" > "$APP/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" || true
+          fi
+
+          # Create wrapper launcher as CFBundleExecutable to set env and exec the real binary
+          cat > "$APP/Contents/MacOS/EMPE" << 'EOF'
+          #!/bin/bash
+          set -e
+          SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+          RES="$SCRIPT_DIR/../Resources"
+          # Tell GLib/GTK to look into our bundle for data
+          export XDG_DATA_DIRS="$RES/share:${XDG_DATA_DIRS}"
+          export GTK_DATA_PREFIX="$RES"
+          export GDK_PIXBUF_MODULEDIR="$RES/lib/gdk-pixbuf-2.0/2.10.0/loaders"
+          export GDK_PIXBUF_MODULE_FILE="$RES/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+          exec "$SCRIPT_DIR/EMPE.bin" "$@"
+          EOF
+          chmod +x "$APP/Contents/MacOS/EMPE"
 
       - name: Create DMG
         run: |
