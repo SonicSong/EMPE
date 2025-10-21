@@ -148,10 +148,6 @@ gboolean GraphWindow::plot_point_callback(gpointer user_data) {
 }
 
 void GraphWindow::update_thread_function() {
-    int time_to_remove_first = global_start_time_one;
-    int time_to_remove_second = global_start_time_two;
-
-    // For global_start_time_first and second s_window use simply data from main window and always call it on button click to setup new start time
     int time_to_remove_first_s_window = global_start_time_first_s_window;
     int time_to_remove_second_s_window = global_start_time_second_s_window;
 
@@ -165,10 +161,7 @@ void GraphWindow::update_thread_function() {
         if (m_chart != nullptr && ThreadSafeQueue::getInstance().try_pop_device(distance1, time1, 0)) {
             g_mutex_lock(&m_mutex);
 
-            // std::cout << "1: " << distance2 << " " << time2 << std::endl;
-            // std::cout << "I AM ALIVE 1" << std::endl;
-
-            double x1 = static_cast<double>(time1 - time_to_remove_first);
+            double x1 = static_cast<double>(time1 - time_to_remove_first_s_window);
             double y1 = static_cast<double>(distance1);
 
             m_data_points.emplace_back(x1, y1);
@@ -203,15 +196,11 @@ void GraphWindow::update_thread_function() {
             updatedFirst = true;
         }
 
-        // Process data from second LiDAR - check both conditions in the loop
         if (SettingsManager::getInstance().getSecondPort() && m_chart2 != nullptr &&
             ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
             g_mutex_lock(&m_mutex);
 
-            // std::cout << "2: " << distance2 << " " << time2 << std::endl;
-            // std::cout << "I AM ALIVE 2" << std::endl;
-
-            double x2 = static_cast<double>(time2 - time_to_remove_second);
+            double x2 = static_cast<double>(time2 - time_to_remove_second_s_window);
             double y2 = static_cast<double>(distance2);
 
             m_data_points2.emplace_back(x2, y2);

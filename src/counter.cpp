@@ -1,5 +1,6 @@
 #include "counter.h"
 
+// TODO: Fix the counter so that it will properly work when two lidars are connected to PC. Currently when two are connected the program crashes.
 
 Counter::Counter() :
     threshold_(0.0),

@@ -267,19 +267,105 @@ void MainWindow::on_licenses_window_hide() {
     m_licenses_window = nullptr;
 }
 
-void MainWindow::create_graph() {
+// void MainWindow::create_graph() {
+//     if (!m_graph_window) {
+//         int distance, time;
+//         if (ThreadSafeQueue::getInstance().try_pop_device(distance, time, 0)) {
+//             global_start_time_first_s_window = time;
+//         }
+//
+//         // Set second LiDAR start time if second port is enabled
+//         if (SettingsManager::getInstance().getSecondPort()) {
+//             int distance2, time2;
+//             if (ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
+//                 global_start_time_second_s_window = time2;
+//             }
+//         }
+//
+//         std::cout << "Value assigned: global_start_time_first_s_window = "
+//                   << global_start_time_first_s_window << std::endl;
+//         m_graph_window = new GraphWindow();
+//         m_graph_window->signal_hide().connect(
+//             sigc::mem_fun(*this, &MainWindow::on_graph_window_hide));
+//         m_graph_window->show();
+//     } else {
+//         m_graph_window->present();
+//     }
+// }
 
+// TODO: Either refactor this or think about better solution as using while and trying to pop data isn't the best solution as it freezes the UI if no data is available
+
+void MainWindow::create_graph() {
     if (!m_graph_window) {
+        int distance, time;
+        bool has_valid_data = false;
+        int retry_count = 0;
+        const int max_retries = 10;  // Try up to 10 times
+        const int retry_delay_ms = 50;  // Wait 50ms between retries
+
+        // Try to get valid data with retries
+        while (retry_count < max_retries && !has_valid_data) {
+            if (ThreadSafeQueue::getInstance().try_pop_device(distance, time, 0)) {
+                if (time > 0) {
+                    global_start_time_first_s_window = time;
+                    has_valid_data = true;
+                    break;
+                }
+            }
+
+            if (!has_valid_data) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay_ms));
+                retry_count++;
+            }
+        }
+
+        // Set second LiDAR start time if second port is enabled
+        if (SettingsManager::getInstance().getSecondPort()) {
+            int distance2, time2;
+            retry_count = 0;
+
+            while (retry_count < max_retries) {
+                if (ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
+                    if (time2 > 0) {
+                        global_start_time_second_s_window = time2;
+                        break;
+                    }
+                }
+                std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay_ms));
+                retry_count++;
+            }
+        }
+
+        // Only create window if we have valid data
+        if (!has_valid_data) {
+            std::cerr << "No valid data available to create graph after "
+                      << max_retries << " retries" << std::endl;
+            return;
+        }
+
+        std::cout << "Value assigned: global_start_time_first_s_window = "
+                  << global_start_time_first_s_window << std::endl;
         m_graph_window = new GraphWindow();
         m_graph_window->signal_hide().connect(
-            sigc::bind(sigc::mem_fun(*this, &MainWindow::on_graph_window_hide)));
+            sigc::mem_fun(*this, &MainWindow::on_graph_window_hide));
+        m_graph_window->show();
+    } else {
+        m_graph_window->present();
     }
-    m_graph_window->show();
 }
 
+
+
 void MainWindow::on_graph_window_hide() {
-    delete m_graph_window;
-    m_graph_window = nullptr;
+    if (m_graph_window) {
+        delete m_graph_window;
+        m_graph_window = nullptr;
+
+        global_start_time_first_s_window = 0;
+        global_start_time_second_s_window = 0;
+        std::cout << "Value reset: global_start_time_first_s_window = "
+                  << global_start_time_first_s_window << std::endl;
+    }
 }
 
 void MainWindow::update_counter_time(const std::string& time_text) {
