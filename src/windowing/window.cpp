@@ -268,10 +268,6 @@ void MainWindow::on_licenses_window_hide() {
 }
 
 void MainWindow::create_graph() {
-    // if (data_points.empty()) {
-    //     std::cerr << "No data to display" << std::endl;
-    //     return;
-    // }
 
     if (!m_graph_window) {
         m_graph_window = new GraphWindow();

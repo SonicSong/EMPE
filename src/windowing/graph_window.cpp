@@ -11,7 +11,7 @@ GraphWindow::GraphWindow()
       m_save_button2("Save LiDAR 2 data to CSV"),
       m_close_window("Close") {
 
-    set_title("Distance-Time Graph");
+    set_title("EMPE Distance-Time Graph");
     set_default_size(800, 800); // Increased height for two charts
     set_hide_on_close(true);
 
@@ -151,6 +151,10 @@ void GraphWindow::update_thread_function() {
     int time_to_remove_first = global_start_time_one;
     int time_to_remove_second = global_start_time_two;
 
+    // For global_start_time_first and second s_window use simply data from main window and always call it on button click to setup new start time
+    int time_to_remove_first_s_window = global_start_time_first_s_window;
+    int time_to_remove_second_s_window = global_start_time_second_s_window;
+
     while (m_running) {
         int distance1, time1;
         int distance2, time2;
@@ -158,8 +162,11 @@ void GraphWindow::update_thread_function() {
         bool updatedSecond = false;
 
         // Process data from first LiDAR
-        if (ThreadSafeQueue::getInstance().try_pop_device(distance1, time1, 0)) {
+        if (m_chart != nullptr && ThreadSafeQueue::getInstance().try_pop_device(distance1, time1, 0)) {
             g_mutex_lock(&m_mutex);
+
+            // std::cout << "1: " << distance2 << " " << time2 << std::endl;
+            // std::cout << "I AM ALIVE 1" << std::endl;
 
             double x1 = static_cast<double>(time1 - time_to_remove_first);
             double y1 = static_cast<double>(distance1);
@@ -200,6 +207,9 @@ void GraphWindow::update_thread_function() {
         if (SettingsManager::getInstance().getSecondPort() && m_chart2 != nullptr &&
             ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
             g_mutex_lock(&m_mutex);
+
+            // std::cout << "2: " << distance2 << " " << time2 << std::endl;
+            // std::cout << "I AM ALIVE 2" << std::endl;
 
             double x2 = static_cast<double>(time2 - time_to_remove_second);
             double y2 = static_cast<double>(distance2);

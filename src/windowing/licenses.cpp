@@ -1253,7 +1253,7 @@ Licenses::Licenses()
     , m_gtkchart_lic("gtkchart license")
     , m_info_label("")
 {
-    set_title("Licenses");
+    set_title("EMPE Licenses");
     set_default_size(600, 400);
     set_hide_on_close(true);  // Hide instead of destroy when close is called
 
