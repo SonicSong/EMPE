@@ -150,7 +150,6 @@ gboolean GraphWindow::plot_point_callback(gpointer user_data) {
 void GraphWindow::update_thread_function() {
     int time_to_remove_first = global_start_time_one;
     int time_to_remove_second = global_start_time_two;
-    bool secondLidarEnabled = SettingsManager::getInstance().getSecondPort();
 
     while (m_running) {
         int distance1, time1;
@@ -168,14 +167,12 @@ void GraphWindow::update_thread_function() {
             m_data_points.emplace_back(x1, y1);
 
             if (SettingsManager::getInstance().getAutoScrollViewport()) {
-                // Auto-scroll mode
                 double viewport_width = static_cast<double>(
                     SettingsManager::getInstance().getViewportWidth());
                 double x_min = (x1 > viewport_width) ? (x1 - viewport_width) : 0.0;
                 gtk_chart_set_x_min(m_chart, x_min);
                 gtk_chart_set_x_max(m_chart, x1);
             } else {
-                // Fixed viewport mode
                 double current_x_max = gtk_chart_get_x_max(m_chart);
                 if (x1 > current_x_max) {
                     gtk_chart_set_x_max(m_chart, x1);
@@ -183,18 +180,15 @@ void GraphWindow::update_thread_function() {
             }
 
             if (SettingsManager::getInstance().getAutoViewportHeight()) {
-                // Auto-adjust y-axis height
                 if (y1 > current_max_y) {
                     current_max_y = y1 * 1.2;
                     gtk_chart_set_y_max(m_chart, current_max_y);
                 }
             } else {
-                // Fixed y-axis height
                 double fixed_y_max = SettingsManager::getInstance().getViewportHeight();
                 gtk_chart_set_y_max(m_chart, fixed_y_max);
             }
 
-            // Plot the point on the first chart
             Point* point = new Point{x1, y1, m_chart};
             g_idle_add(plot_point_callback, point);
 
@@ -202,27 +196,23 @@ void GraphWindow::update_thread_function() {
             updatedFirst = true;
         }
 
-        // Process data from second LiDAR (if enabled)
-        if (secondLidarEnabled && m_chart2 &&
+        // Process data from second LiDAR - check both conditions in the loop
+        if (SettingsManager::getInstance().getSecondPort() && m_chart2 != nullptr &&
             ThreadSafeQueue::getInstance().try_pop_device(distance2, time2, 1)) {
             g_mutex_lock(&m_mutex);
 
             double x2 = static_cast<double>(time2 - time_to_remove_second);
             double y2 = static_cast<double>(distance2);
 
-            // Store new point for second LiDAR
             m_data_points2.emplace_back(x2, y2);
 
-            // Update viewport for second chart
             if (SettingsManager::getInstance().getAutoScrollViewport()) {
-                // Auto-scroll mode
                 double viewport_width = static_cast<double>(
                     SettingsManager::getInstance().getViewportWidth());
                 double x_min = (x2 > viewport_width) ? (x2 - viewport_width) : 0.0;
                 gtk_chart_set_x_min(m_chart2, x_min);
                 gtk_chart_set_x_max(m_chart2, x2);
             } else {
-                // Fixed viewport mode
                 double current_x_max = gtk_chart_get_x_max(m_chart2);
                 if (x2 > current_x_max) {
                     gtk_chart_set_x_max(m_chart2, x2);
@@ -230,33 +220,28 @@ void GraphWindow::update_thread_function() {
             }
 
             if (SettingsManager::getInstance().getAutoViewportHeight()) {
-                // Auto-adjust y-axis height
                 if (y2 > current_max_y) {
                     current_max_y = y2 * 1.2;
-                    gtk_chart_set_y_max(m_chart, current_max_y);
+                    gtk_chart_set_y_max(m_chart2, current_max_y);  // Fixed: was m_chart, should be m_chart2
                 }
             } else {
-                // Fixed y-axis height
                 double fixed_y_max = SettingsManager::getInstance().getViewportHeight();
-                gtk_chart_set_y_max(m_chart, fixed_y_max);
+                gtk_chart_set_y_max(m_chart2, fixed_y_max);  // Fixed: was m_chart, should be m_chart2
             }
 
-            // Plot the point on the second chart
             Point* point2 = new Point{x2, y2, m_chart2};
             g_idle_add(plot_point_callback, point2);
 
             g_mutex_unlock(&m_mutex);
             updatedSecond = true;
-        } else if (secondLidarEnabled && !m_chart2) {
-
         }
 
-        // If no updates, sleep a bit
         if (!updatedFirst && !updatedSecond) {
             std::this_thread::sleep_for(std::chrono::milliseconds(2));
         }
     }
 }
+
 
 void GraphWindow::on_close_clicked() {
     hide();
