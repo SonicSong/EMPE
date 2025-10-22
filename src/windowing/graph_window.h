@@ -38,8 +38,9 @@ private:
     Gtk::Button m_close_window;
     Gtk::Button m_save_button;
     Gtk::Button m_save_button2;  // Second save button for second LiDAR
-    double current_max_x;
+    // double current_max_x;
     double current_max_y;
+    double current_max_y_2;
 
     struct Point {
         double x;

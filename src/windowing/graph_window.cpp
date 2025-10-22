@@ -1,7 +1,5 @@
 #include "graph_window.h"
 
-//TODO: Possible fix for how much data is displayed? Count elements in vector with data and later just trim to leave the most recent eg. 100 points. Don't use seconds as it's unrelaiable. Use temporary vector to store trimmed data. It should work as continously updated vector. Could be CPU heavy.
-// I need to think a bit more about it as it's not stupid but it's not easy. Also need to verify how do I get the data to be displayed if I get it directly from vector that stores the data or from the thread connection_init().
 GraphWindow::GraphWindow()
     : m_box(Gtk::Orientation::VERTICAL),
       m_chart(nullptr),
@@ -136,7 +134,7 @@ void GraphWindow::setup_second_chart() {
     gtk_chart_set_y_label(m_chart2, "Distance [units]");
 
     gtk_chart_set_x_min(m_chart2, 0.0);
-    gtk_chart_set_y_max(m_chart2, current_max_y);
+    gtk_chart_set_y_max(m_chart2, current_max_y_2);
     gtk_chart_set_width(m_chart2, 800);
 }
 
@@ -219,9 +217,9 @@ void GraphWindow::update_thread_function() {
             }
 
             if (SettingsManager::getInstance().getAutoViewportHeight()) {
-                if (y2 > current_max_y) {
-                    current_max_y = y2 * 1.2;
-                    gtk_chart_set_y_max(m_chart2, current_max_y);  // Fixed: was m_chart, should be m_chart2
+                if (y2 > current_max_y_2) {
+                    current_max_y_2 = y2 * 1.2;
+                    gtk_chart_set_y_max(m_chart2, current_max_y_2);  // Fixed: was m_chart, should be m_chart2
                 }
             } else {
                 double fixed_y_max = SettingsManager::getInstance().getViewportHeight();

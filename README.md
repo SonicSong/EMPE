@@ -10,6 +10,8 @@
 - `cmake --build build --config Release`
 
 ### macOS
+#### IMPORTANT! This is the only way to run EMPE on macOS
+
 - Install Homebrew if you haven't already: https://brew.sh/
 - Install the following packages:
   - `brew install cmake pkg-config gtkmm4 gtk4 abseil git`
@@ -21,9 +23,10 @@ Don't. It's not worth it.
 - Install MSYS2
 - Install the following packages:
   - `mingw-w64-ucrt-x86_64-gcc`
-  -  `mingw-w64-ucrt-x86_64-cmake`
+  - `mingw-w64-ucrt-x86_64-cmake`
   - `mingw-w64-ucrt-x86_64-ninja`
   - `mingw-w64-ucrt-x86_64-pkg-config`
   - `mingw-w64-ucrt-x86_64-gtk4`
   - `mingw-w64-ucrt-x86_64-gtkmm-4.0`
   - `mingw-w64-ucrt-x86_64-abseil-cpp`
+- (And most likely some more from dependency hell on Windows to get it working.)

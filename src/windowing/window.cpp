@@ -80,6 +80,7 @@ MainWindow::MainWindow()
 
     // Setup counter UI elements
     m_counter_box.set_spacing(10);
+    m_counter_time_label_title.set_text("Crossings counter");
     m_threshold_label.set_text("Threshold:");
     m_window_label.set_text("Time Window (s):");
     // m_crossings_label.set_text("Crossings: 0");
@@ -130,10 +131,13 @@ MainWindow::MainWindow()
     m_counter_box.append(m_counter_start_button);
     // m_counter_box.append(m_crossings_label);
 
-    // Add the counter time label to the UI
+    m_separator.set_orientation(Gtk::Orientation::HORIZONTAL);
+    m_box.append(m_separator);
+    m_box.append(m_counter_time_label_title);
     m_box.append(m_counter_time_label);
 
     // Add counter box to main box after the existing elements
+    // m_box.append();
     m_box.append(m_counter_box);
 
     set_child(m_box);
@@ -343,8 +347,6 @@ void MainWindow::create_graph() {
             return;
         }
 
-        std::cout << "Value assigned: global_start_time_first_s_window = "
-                  << global_start_time_first_s_window << std::endl;
         m_graph_window = new GraphWindow();
         m_graph_window->signal_hide().connect(
             sigc::mem_fun(*this, &MainWindow::on_graph_window_hide));
@@ -363,8 +365,6 @@ void MainWindow::on_graph_window_hide() {
 
         global_start_time_first_s_window = 0;
         global_start_time_second_s_window = 0;
-        std::cout << "Value reset: global_start_time_first_s_window = "
-                  << global_start_time_first_s_window << std::endl;
     }
 }
 

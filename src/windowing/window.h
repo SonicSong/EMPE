@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 #include <utility>
-#include <fstream>
+#include <gtkmm/separator.h>
 
 
 #include "../serial_read.h"
@@ -55,6 +55,8 @@ class MainWindow : public Gtk::Window {
         Gtk::Box m_threshold_box;
         Gtk::Box m_counter_box;
 
+        Gtk::Separator m_separator;
+
         Gtk::Button m_save_button;
         Gtk::Button m_settings_button;
         Gtk::Button m_about_button;
@@ -71,6 +73,7 @@ class MainWindow : public Gtk::Window {
         Gtk::SpinButton m_window_spin;
         Gtk::Label m_window_label;
         Gtk::Label m_counter_time_label;
+        Gtk::Label m_counter_time_label_title;
 
         Gtk::Box m_reading_freq_box;
         Gtk::Label m_reading_freq_label;
